@@ -2,17 +2,36 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Play Buriti - Início</title>
+  <title>Play Buriti</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🎮 Bem-vindo ao Play Buriti! 🎮</h1>
-  <p>Entre e jogue diversos jogos incríveis criados especialmente para você!</p>
-  <a href="jogos.html" class="btn">Entrar nos Jogos</a>
 
-  <footer>
-    Criado por Victor Gabriel - Escola Estadual São José do Buriti
-  </footer>
+  <div class="tela-inicial" id="telaInicial">
+    <h1>🎮 Bem-vindo ao Play Buriti! 🎮</h1>
+    <p>Entre e jogue diversos jogos incríveis criados especialmente para você!</p>
+    <button class="btn" onclick="mostrarGaleria()">Entrar nos Jogos</button>
+    <footer>Criado por Victor Gabriel - Escola Estadual São José do Buriti</footer>
+  </div>
+
+  <div class="galeria" id="galeriaJogos" style="display:none;">
+    <h2>Escolha um jogo</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>🐍 Snake</h3>
+        <button onclick="iniciarJogo('snake')">Jogar</button>
+      </div>
+      <div class="card">
+        <h3>🏓 Pong</h3>
+        <button onclick="iniciarJogo('pong')">Jogar</button>
+      </div>
+      <div class="card">
+        <h3>🧠 Jogo da Memória</h3>
+        <button onclick="iniciarJogo('memoria')">Jogar</button>
+      </div>
+    </div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+  </div>
 
   <script src="script.js"></script>
 </body>
