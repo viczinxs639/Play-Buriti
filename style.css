@@ -73,3 +73,35 @@ canvas {
   align-items: center;
   justify-content: center;
 }
+
+/* Botão Reiniciar do jogo Snake */
+#btnReiniciar {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background-color: #00ff88;
+  color: black;
+  box-shadow: 0 0 10px #00ff88;
+}
+#btnReiniciar:hover {
+  background-color: #00cc66;
+}
+
+/* Botão Começar do jogo Snake */
+#btnComecar {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background-color: #00ff88;
+  color: black;
+  box-shadow: 0 0 10px #00ff88;
+}
+#btnComecar:hover {
+  background-color: #00cc66;
+}
