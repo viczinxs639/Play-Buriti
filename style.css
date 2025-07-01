@@ -5,15 +5,19 @@ body {
   color: white;
   text-align: center;
 }
+
 h1, h2, h3 {
   text-shadow: 2px 2px #000;
 }
+
 .tela-inicial {
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding: 20px;
 }
+
 .btn {
   padding: 15px 30px;
   background-color: #00ff88;
@@ -27,19 +31,24 @@ h1, h2, h3 {
 .btn:hover {
   background-color: #00cc66;
 }
+
 footer {
   margin-top: 40px;
   color: #ccc;
+  font-size: 0.9em;
 }
+
 .galeria {
-  padding: 40px;
+  padding: 20px;
 }
+
 .grid {
   display: flex;
   justify-content: center;
   gap: 30px;
   flex-wrap: wrap;
 }
+
 .card {
   background-color: #222;
   padding: 20px;
@@ -47,13 +56,18 @@ footer {
   box-shadow: 0 0 10px #00ff88;
   width: 200px;
 }
+
 canvas {
   margin-top: 30px;
   background: #000;
   display: block;
   margin-left: auto;
   margin-right: auto;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
 }
+
 #memoriaContainer {
   display: flex;
   flex-wrap: wrap;
@@ -74,23 +88,7 @@ canvas {
   justify-content: center;
 }
 
-/* Botão Reiniciar do jogo Snake */
-#btnReiniciar {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 1.2em;
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  background-color: #00ff88;
-  color: black;
-  box-shadow: 0 0 10px #00ff88;
-}
-#btnReiniciar:hover {
-  background-color: #00cc66;
-}
-
-/* Botão Começar do jogo Snake */
+#btnReiniciar,
 #btnComecar {
   margin-top: 20px;
   padding: 10px 20px;
@@ -102,6 +100,44 @@ canvas {
   color: black;
   box-shadow: 0 0 10px #00ff88;
 }
+#btnReiniciar:hover,
 #btnComecar:hover {
   background-color: #00cc66;
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5em;
+  }
+
+  .btn,
+  #btnReiniciar,
+  #btnComecar {
+    font-size: 1em;
+    padding: 10px 20px;
+  }
+
+  .card {
+    width: 90%;
+  }
+
+  .grid {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  canvas {
+    width: 90%;
+    height: auto;
+  }
+
+  #memoriaContainer {
+    width: 90%;
+  }
+
+  .card-memoria {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5em;
+  }
 }
