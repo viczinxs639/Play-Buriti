@@ -105,6 +105,29 @@ canvas {
   background-color: #00cc66;
 }
 
+/* Controles móveis */
+#mobileControls {
+  margin-top: 20px;
+}
+#mobileControls .row {
+  display: flex;
+  justify-content: center;
+  margin: 5px 0;
+}
+#mobileControls button {
+  background-color: #00ff88;
+  border: none;
+  border-radius: 8px;
+  font-size: 2em;
+  margin: 0 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00ff88;
+}
+#mobileControls button:hover {
+  background-color: #00cc66;
+}
+
 @media (max-width: 600px) {
   h1 {
     font-size: 1.5em;
@@ -139,5 +162,9 @@ canvas {
     width: 50px;
     height: 50px;
     font-size: 1.5em;
+  }
+
+  #mobileControls {
+    display: block;
   }
 }
