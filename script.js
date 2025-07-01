@@ -48,9 +48,13 @@ function startSnake() {
     y: Math.floor(Math.random() * 19) * box,
   };
 
+  d = "";
+  document.removeEventListener("keydown", direction);
   document.addEventListener("keydown", direction);
-  setupSwipeControls(canvas);
+
+  setupSwipeControls(canvas, swipeSnake);
   gameStarted = true;
+  clearInterval(gameLoop);
   gameLoop = setInterval(drawSnake, 200);
 }
 
@@ -62,48 +66,37 @@ function direction(event) {
   if (event.keyCode === 40 && d !== "UP") d = "DOWN";
 }
 
-// Controle por swipe (celular)
-function setupSwipeControls(element) {
-  let startX, startY;
-
-  element.addEventListener("touchstart", function (e) {
-    const touch = e.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
-  });
-
-  element.addEventListener("touchend", function (e) {
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - startX;
-    const dy = touch.clientY - startY;
-
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > 20 && d !== "LEFT") d = "RIGHT";
-      else if (dx < -20 && d !== "RIGHT") d = "LEFT";
-    } else {
-      if (dy > 20 && d !== "UP") d = "DOWN";
-      else if (dy < -20 && d !== "DOWN") d = "UP";
-    }
-  });
+function swipeSnake(dir) {
+  if (!gameStarted || gameOverAnim) return;
+  if (dir === "LEFT" && d !== "RIGHT") d = "LEFT";
+  else if (dir === "UP" && d !== "DOWN") d = "UP";
+  else if (dir === "RIGHT" && d !== "LEFT") d = "RIGHT";
+  else if (dir === "DOWN" && d !== "UP") d = "DOWN";
 }
 
 function drawSnake() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, 400, 400);
 
-  for (let i = 0; i < snake.length; i++) {
-    ctx.fillStyle = i === 0 ? "#00ff88" : "#00cc66";
+  // Cabeça verde claro
+  ctx.fillStyle = "#00ff88";
+  ctx.fillRect(snake[0].x, snake[0].y, box, box);
+
+  // Corpo verde escuro
+  for (let i = 1; i < snake.length; i++) {
+    ctx.fillStyle = "#00cc66";
     ctx.fillRect(snake[i].x, snake[i].y, box, box);
   }
 
+  // Comida vermelha
   ctx.fillStyle = "red";
   ctx.fillRect(food.x, food.y, box, box);
 
   let head = { x: snake[0].x, y: snake[0].y };
   if (d === "LEFT") head.x -= box;
-  if (d === "UP") head.y -= box;
-  if (d === "RIGHT") head.x += box;
-  if (d === "DOWN") head.y += box;
+  else if (d === "UP") head.y -= box;
+  else if (d === "RIGHT") head.x += box;
+  else if (d === "DOWN") head.y += box;
 
   if (head.x === food.x && head.y === food.y) {
     score++;
@@ -125,10 +118,12 @@ function drawSnake() {
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
     ctx.fillText("Game Over", 120, 200);
+    gameStarted = false;
     return;
   }
 
   snake.unshift(head);
+
   ctx.fillStyle = "white";
   ctx.font = "20px Arial";
   ctx.fillText("Pontuação: " + score, 10, 390);
@@ -157,7 +152,7 @@ function iniciarFaseMemoria() {
   paresEncontrados = 0;
   cartasReveladas = [];
 
-  const nPares = Math.min(3 + memoriaFaseAtual, 10); // Cresce até 10 pares max
+  const nPares = Math.min(3 + memoriaFaseAtual, 10);
   const simbolos = ['🍎','🍌','🍇','🍓','🍍','🥝','🍉','🍒','🥥','🍑'];
   let usados = simbolos.slice(0, nPares);
   cartas = usados.concat(usados).sort(() => 0.5 - Math.random());
@@ -190,7 +185,6 @@ function virarCartaMemoria() {
   if (cartasReveladas.length === 2) {
     if (cartas[Array.from(this.parentNode.children).indexOf(cartasReveladas[0])] ===
         cartas[Array.from(this.parentNode.children).indexOf(cartasReveladas[1])]) {
-      // Acertou par
       paresEncontrados++;
       cartasReveladas = [];
       if (paresEncontrados === cartas.length / 2) {
@@ -198,7 +192,6 @@ function virarCartaMemoria() {
         document.getElementById("btnProximaFase").style.display = "inline-block";
       }
     } else {
-      // Errou par - esconde depois
       memoriaJogando = false;
       setTimeout(() => {
         cartasReveladas.forEach(c => {
@@ -221,7 +214,7 @@ function proximaFaseMemoria() {
 // --- PONG ---
 let pongCanvas, pongCtx;
 let pongGameLoop;
-let pongPlayerY, pongAIDir;
+let pongPlayerY, pongAIY;
 let pongBallX, pongBallY, pongBallVX, pongBallVY;
 let pongPlayerScore, pongAIScore;
 const pongWidth = 400, pongHeight = 400;
@@ -236,7 +229,7 @@ function startPong() {
   document.getElementById("memoriaContainer").style.display = "none";
 
   pongPlayerY = pongHeight / 2 - paddleHeight / 2;
-  pongAIDir = 2;
+  pongAIY = pongHeight / 2 - paddleHeight / 2;
   pongBallX = pongWidth / 2;
   pongBallY = pongHeight / 2;
   pongBallVX = 3;
@@ -244,6 +237,7 @@ function startPong() {
   pongPlayerScore = 0;
   pongAIScore = 0;
 
+  document.removeEventListener("keydown", pongKeyDown);
   document.addEventListener("keydown", pongKeyDown);
   setupSwipeControls(pongCanvas, pongSwipeHandler);
 
@@ -271,9 +265,13 @@ function drawPong() {
   pongCtx.fillStyle = "#00ff88";
   pongCtx.fillRect(10, pongPlayerY, paddleWidth, paddleHeight);
 
-  // AI paddle (right)
+  // AI paddle (right) simples seguindo a bola
+  if (pongAIY + paddleHeight/2 < pongBallY) pongAIY += 3;
+  else pongAIY -= 3;
+  pongAIY = Math.min(Math.max(0, pongAIY), pongHeight - paddleHeight);
+
   pongCtx.fillStyle = "#00cc66";
-  pongCtx.fillRect(pongWidth - 20, pongBallY - paddleHeight / 2, paddleWidth, paddleHeight);
+  pongCtx.fillRect(pongWidth - 20, pongAIY, paddleWidth, paddleHeight);
 
   // Ball
   pongCtx.beginPath();
@@ -298,27 +296,25 @@ function drawPong() {
   }
 
   // Bounce player paddle
-  if (pongBallX - ballRadius < 20 &&
-      pongBallY > pongPlayerY &&
-      pongBallY < pongPlayerY + paddleHeight) {
+  if (
+    pongBallX - ballRadius < 20 &&
+    pongBallY > pongPlayerY &&
+    pongBallY < pongPlayerY + paddleHeight
+  ) {
     pongBallVX = -pongBallVX;
-    // Slightly increase speed
     pongBallVX *= 1.05;
     pongBallVY *= 1.05;
   }
 
   // Bounce AI paddle
-  if (pongBallX + ballRadius > pongWidth - 20 &&
-      pongBallY > pongBallY - paddleHeight / 2 &&
-      pongBallY < pongBallY - paddleHeight / 2 + paddleHeight) {
+  if (
+    pongBallX + ballRadius > pongWidth - 20 &&
+    pongBallY > pongAIY &&
+    pongBallY < pongAIY + paddleHeight
+  ) {
     pongBallVX = -pongBallVX;
-  }
-
-  // AI Movement simple follow ball Y
-  if (pongBallY > pongBallY - paddleHeight / 2 + paddleHeight / 2) {
-    pongBallY -= 2;
-  } else {
-    pongBallY += 2;
+    pongBallVX *= 1.05;
+    pongBallVY *= 1.05;
   }
 
   // Score update
@@ -334,11 +330,11 @@ function drawPong() {
 function resetBall() {
   pongBallX = pongWidth / 2;
   pongBallY = pongHeight / 2;
-  pongBallVX = (Math.random() > 0.5 ? 3 : -3);
-  pongBallVY = (Math.random() > 0.5 ? 3 : -3);
+  pongBallVX = Math.random() > 0.5 ? 3 : -3;
+  pongBallVY = Math.random() > 0.5 ? 3 : -3;
 }
 
-// Reuso do setupSwipeControls para Pong com callback diferente
+// Swipe control geral para os jogos (chama callback com a direção)
 function setupSwipeControls(element, callbackSwipe) {
   let startX, startY;
 
