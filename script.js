@@ -48,7 +48,7 @@ function startSnake() {
   gameLoop = setInterval(draw, 200);
 }
 
-// Controle por teclado
+// Teclado
 function direction(event) {
   if (!gameStarted || gameOverAnim) return;
   if (event.keyCode === 37 && d !== "RIGHT") d = "LEFT";
@@ -57,7 +57,7 @@ function direction(event) {
   if (event.keyCode === 40 && d !== "UP") d = "DOWN";
 }
 
-// Controle por toque (mobile)
+// Toque (celular)
 function setDirection(dir) {
   if (!gameStarted || gameOverAnim) return;
   if (dir === "LEFT" && d !== "RIGHT") d = "LEFT";
@@ -66,7 +66,7 @@ function setDirection(dir) {
   if (dir === "DOWN" && d !== "UP") d = "DOWN";
 }
 
-// Lógica do jogo da cobrinha
+// Desenhar Snake
 function draw() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, 400, 400);
@@ -86,7 +86,6 @@ function draw() {
   if (d === "RIGHT") head.x += box;
   if (d === "DOWN") head.y += box;
 
-  // Comeu comida
   if (head.x === food.x && head.y === food.y) {
     score++;
     food = {
@@ -97,7 +96,6 @@ function draw() {
     snake.pop();
   }
 
-  // Bateu nas paredes ou no próprio corpo
   if (
     head.x < 0 ||
     head.x >= 400 ||
@@ -115,7 +113,6 @@ function draw() {
 
   snake.unshift(head);
 
-  // Pontuação
   ctx.fillStyle = "white";
   ctx.font = "20px Arial";
   ctx.fillText("Pontuação: " + score, 10, 390);
@@ -130,7 +127,7 @@ function collision(head, array) {
   return false;
 }
 
-// Jogo da Memória
+// Memória
 function startMemoria() {
   const container = document.getElementById("memoriaContainer");
   container.style.display = "flex";
