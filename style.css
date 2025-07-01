@@ -73,11 +73,9 @@ canvas {
   margin-top: 20px;
   text-align: center;
 }
-
 #memoriaInfo {
   margin-bottom: 10px;
 }
-
 #btnIniciarMemoria, #btnProximaFase {
   background-color: #00ff88;
   color: black;
@@ -89,17 +87,11 @@ canvas {
   cursor: pointer;
   box-shadow: 0 0 8px #00ff88;
 }
-
-#btnIniciarMemoria:hover, #btnProximaFase:hover {
-  background-color: #00cc66;
-}
-
 #memoriaFase {
   font-size: 1.2em;
   margin-top: 5px;
   font-weight: bold;
 }
-
 #cartasContainer {
   display: flex;
   flex-wrap: wrap;
@@ -108,7 +100,6 @@ canvas {
   max-width: 340px;
   margin: 0 auto;
 }
-
 .card-memoria {
   width: 60px;
   height: 60px;
@@ -123,7 +114,6 @@ canvas {
   box-shadow: 0 0 5px #00ff88;
   transition: background-color 0.3s;
 }
-
 .card-memoria.revelada {
   background-color: #00cc66;
   color: black;
@@ -131,19 +121,31 @@ canvas {
   box-shadow: 0 0 12px #00ff88;
 }
 
-/* Responsividade */
-@media (max-width: 600px) {
-  .card {
-    width: 90%;
-  }
-
-  .grid {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  canvas {
-    width: 90%;
-    height: auto;
+/* Controles visuais no celular */
+.mobile-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+}
+.mobile-controls .row {
+  display: flex;
+  justify-content: center;
+  margin: 5px 0;
+}
+.arrow-btn {
+  background-color: rgba(0, 255, 136, 0.8);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 24px;
+  margin: 0 10px;
+  box-shadow: 0 0 10px #00ff88;
+  cursor: pointer;
+}
+@media (min-width: 768px) {
+  .mobile-controls {
+    display: none !important;
   }
 }
