@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Play Buriti</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -34,7 +34,14 @@
 
     <canvas id="gameCanvas" width="400" height="400" style="display:none;"></canvas>
 
-    <div id="memoriaContainer"></div>
+    <div id="memoriaContainer" style="display:none;">
+      <div id="memoriaInfo">
+        <button id="btnIniciarMemoria">Iniciar Memória</button>
+        <button id="btnProximaFase" style="display:none;">Próxima Fase</button>
+        <p id="memoriaFase">Fase: 1</p>
+      </div>
+      <div id="cartasContainer"></div>
+    </div>
   </div>
 
   <script src="script.js"></script>
