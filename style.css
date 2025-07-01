@@ -76,6 +76,7 @@ canvas {
   gap: 10px;
   justify-content: center;
 }
+
 .card-memoria {
   width: 60px;
   height: 60px;
@@ -88,34 +89,7 @@ canvas {
   justify-content: center;
 }
 
-#mobileControls {
-  margin-top: 20px;
-  display: none;
-}
-#mobileControls .row {
-  display: flex;
-  justify-content: center;
-  margin: 5px 0;
-}
-#mobileControls button {
-  background-color: #00ff88;
-  border: none;
-  border-radius: 8px;
-  font-size: 2em;
-  margin: 0 10px;
-  padding: 10px 20px;
-  cursor: pointer;
-  box-shadow: 0 0 10px #00ff88;
-}
-#mobileControls button:active {
-  background-color: #00cc66;
-}
-
 @media (max-width: 600px) {
-  #mobileControls {
-    display: block;
-  }
-
   .card {
     width: 90%;
   }
