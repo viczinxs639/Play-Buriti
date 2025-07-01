@@ -88,26 +88,9 @@ canvas {
   justify-content: center;
 }
 
-#btnReiniciar,
-#btnComecar {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 1.2em;
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  background-color: #00ff88;
-  color: black;
-  box-shadow: 0 0 10px #00ff88;
-}
-#btnReiniciar:hover,
-#btnComecar:hover {
-  background-color: #00cc66;
-}
-
-/* Controles móveis */
 #mobileControls {
   margin-top: 20px;
+  display: none;
 }
 #mobileControls .row {
   display: flex;
@@ -124,20 +107,13 @@ canvas {
   cursor: pointer;
   box-shadow: 0 0 10px #00ff88;
 }
-#mobileControls button:hover {
+#mobileControls button:active {
   background-color: #00cc66;
 }
 
 @media (max-width: 600px) {
-  h1 {
-    font-size: 1.5em;
-  }
-
-  .btn,
-  #btnReiniciar,
-  #btnComecar {
-    font-size: 1em;
-    padding: 10px 20px;
+  #mobileControls {
+    display: block;
   }
 
   .card {
@@ -152,19 +128,5 @@ canvas {
   canvas {
     width: 90%;
     height: auto;
-  }
-
-  #memoriaContainer {
-    width: 90%;
-  }
-
-  .card-memoria {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5em;
-  }
-
-  #mobileControls {
-    display: block;
   }
 }
