@@ -8,11 +8,13 @@ function iniciarJogo(nome) {
   document.getElementById('gameCanvas').style.display = 'none';
   document.getElementById('memoriaContainer').style.display = 'none';
   const btnReiniciar = document.getElementById('btnReiniciar');
+  const btnComecar = document.getElementById('btnComecar');
   if (btnReiniciar) btnReiniciar.style.display = 'none';
+  if (btnComecar) btnComecar.style.display = 'none';
 
   if (nome === 'snake') {
     document.getElementById('gameCanvas').style.display = 'block';
-    iniciarSnake();
+    mostrarBotaoComecarSnake();
   } else if (nome === 'pong') {
     alert('🏓 Pong em construção!');
   } else if (nome === 'memoria') {
@@ -31,6 +33,26 @@ const box = 20;
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 let gameOverAnim = false;
+let score = 0;
+let gameStarted = false;
+
+function mostrarBotaoComecarSnake() {
+  if (!document.getElementById('btnComecar')) {
+    const btn = document.createElement('button');
+    btn.id = 'btnComecar';
+    btn.textContent = 'Começar';
+    btn.style.marginTop = '20px';
+    btn.style.padding = '10px 20px';
+    btn.style.fontSize = '1.2em';
+    btn.style.cursor = 'pointer';
+    btn.onclick = () => {
+      btn.style.display = 'none';
+      iniciarSnake();
+    };
+    canvas.parentNode.appendChild(btn);
+  }
+  document.getElementById('btnComecar').style.display = 'inline-block';
+}
 
 function iniciarSnake() {
   clearInterval(game);
@@ -38,6 +60,8 @@ function iniciarSnake() {
   snake = [{ x: 9 * box, y: 10 * box }];
   food = { x: Math.floor(Math.random() * 19) * box, y: Math.floor(Math.random() * 19) * box };
   gameOverAnim = false;
+  score = 0;
+  gameStarted = true;
 
   // Criar botão reiniciar se não existir
   if (!document.getElementById("btnReiniciar")) {
@@ -63,7 +87,7 @@ function iniciarSnake() {
 }
 
 function direction(event) {
-  if (gameOverAnim) return; // não aceitar comandos se acabou
+  if (gameOverAnim || !gameStarted) return; // não aceitar comandos se acabou ou se não começou
   if (event.keyCode === 37 && d !== "RIGHT") d = "LEFT";
   else if (event.keyCode === 38 && d !== "DOWN") d = "UP";
   else if (event.keyCode === 39 && d !== "LEFT") d = "RIGHT";
@@ -80,6 +104,11 @@ function draw() {
       ctx.strokeRect(x, y, box, box);
     }
   }
+
+  // Mostrar pontuação no topo
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.fillText(`Pontuação: ${score}`, 10, 25);
 
   // Desenhar a comida com um círculo vermelho com sombra
   ctx.fillStyle = "crimson";
@@ -119,6 +148,7 @@ function draw() {
       x: Math.floor(Math.random() * 19) * box,
       y: Math.floor(Math.random() * 19) * box,
     };
+    score++;
   } else {
     snake.pop();
   }
@@ -132,6 +162,7 @@ function draw() {
     snake.some(s => s.x === newHead.x && s.y === newHead.y)
   ) {
     clearInterval(game);
+    gameStarted = false;
     animarGameOver();
     return;
   }
@@ -153,7 +184,7 @@ function animarGameOver() {
     if (count > 5) {
       clearInterval(piscar);
       canvas.style.backgroundColor = "";
-      alert("Game Over!");
+      alert(`Game Over! Sua pontuação foi: ${score}`);
       document.getElementById("btnReiniciar").style.display = "inline-block";
     }
   }, 300);
