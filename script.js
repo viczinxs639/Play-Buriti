@@ -1,231 +1,171 @@
 function mostrarGaleria() {
-  document.getElementById('telaInicial').style.display = 'none';
-  document.getElementById('galeriaJogos').style.display = 'block';
+  document.getElementById("telaInicial").style.display = "none";
+  document.getElementById("galeriaJogos").style.display = "block";
 }
 
-function iniciarJogo(nome) {
-  // Esconder todos elementos de jogos
-  document.getElementById('gameCanvas').style.display = 'none';
-  document.getElementById('memoriaContainer').style.display = 'none';
-  const btnReiniciar = document.getElementById('btnReiniciar');
-  const btnComecar = document.getElementById('btnComecar');
-  if (btnReiniciar) btnReiniciar.style.display = 'none';
-  if (btnComecar) btnComecar.style.display = 'none';
-
-  if (nome === 'snake') {
-    document.getElementById('gameCanvas').style.display = 'block';
-    mostrarBotaoComecarSnake();
-  } else if (nome === 'pong') {
-    alert('🏓 Pong em construção!');
-  } else if (nome === 'memoria') {
-    document.getElementById('memoriaContainer').style.display = 'flex';
-    iniciarMemoria();
-  }
-}
-
-/* ----- Jogo da Cobrinha (Snake) ----- */
-
-let game; 
+let canvas = null;
+let ctx = null;
+let box = 20;
 let snake = [];
 let food = {};
-let d;
-const box = 20;
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-let gameOverAnim = false;
+let d = "";
 let score = 0;
+let gameLoop = null;
 let gameStarted = false;
+let gameOverAnim = false;
 
-function mostrarBotaoComecarSnake() {
-  if (!document.getElementById('btnComecar')) {
-    const btn = document.createElement('button');
-    btn.id = 'btnComecar';
-    btn.textContent = 'Começar';
-    btn.style.marginTop = '20px';
-    btn.style.padding = '10px 20px';
-    btn.style.fontSize = '1.2em';
-    btn.style.cursor = 'pointer';
-    btn.onclick = () => {
-      btn.style.display = 'none';
-      iniciarSnake();
-    };
-    canvas.parentNode.appendChild(btn);
-  }
-  document.getElementById('btnComecar').style.display = 'inline-block';
+// Iniciar jogo selecionado
+function iniciarJogo(jogo) {
+  canvas = document.getElementById("gameCanvas");
+  ctx = canvas.getContext("2d");
+  document.getElementById("memoriaContainer").style.display = "none";
+  canvas.style.display = "none";
+
+  clearInterval(gameLoop);
+  gameStarted = false;
+  d = "";
+  snake = [];
+
+  if (jogo === "snake") startSnake();
+  else if (jogo === "memoria") startMemoria();
+  else alert("Em breve...");
 }
 
-function iniciarSnake() {
-  clearInterval(game);
-  d = null;
-  snake = [{ x: 9 * box, y: 10 * box }];
-  food = { x: Math.floor(Math.random() * 19) * box, y: Math.floor(Math.random() * 19) * box };
-  gameOverAnim = false;
+// Snake
+function startSnake() {
+  canvas.style.display = "block";
   score = 0;
-  gameStarted = true;
-
-  // Criar botão reiniciar se não existir
-  if (!document.getElementById("btnReiniciar")) {
-    const btn = document.createElement("button");
-    btn.id = "btnReiniciar";
-    btn.textContent = "Reiniciar";
-    btn.style.display = "none";
-    btn.style.marginTop = "20px";
-    btn.style.padding = "10px 20px";
-    btn.style.fontSize = "1.2em";
-    btn.style.cursor = "pointer";
-    btn.onclick = () => {
-      btn.style.display = "none";
-      iniciarSnake();
-    };
-    canvas.parentNode.appendChild(btn);
-  }
-  document.getElementById("btnReiniciar").style.display = "none";
+  d = "";
+  gameOverAnim = false;
+  snake = [{ x: 9 * box, y: 9 * box }];
+  food = {
+    x: Math.floor(Math.random() * 19) * box,
+    y: Math.floor(Math.random() * 19) * box,
+  };
 
   document.addEventListener("keydown", direction);
-
-  game = setInterval(draw, 150); // velocidade mais lenta
+  gameStarted = true;
+  gameLoop = setInterval(draw, 200);
 }
 
+// Controle por teclado
 function direction(event) {
-  if (gameOverAnim || !gameStarted) return; // não aceitar comandos se acabou ou se não começou
+  if (!gameStarted || gameOverAnim) return;
   if (event.keyCode === 37 && d !== "RIGHT") d = "LEFT";
-  else if (event.keyCode === 38 && d !== "DOWN") d = "UP";
-  else if (event.keyCode === 39 && d !== "LEFT") d = "RIGHT";
-  else if (event.keyCode === 40 && d !== "UP") d = "DOWN";
+  if (event.keyCode === 38 && d !== "DOWN") d = "UP";
+  if (event.keyCode === 39 && d !== "LEFT") d = "RIGHT";
+  if (event.keyCode === 40 && d !== "UP") d = "DOWN";
 }
 
+// Controle por toque (mobile)
+function setDirection(dir) {
+  if (!gameStarted || gameOverAnim) return;
+  if (dir === "LEFT" && d !== "RIGHT") d = "LEFT";
+  if (dir === "UP" && d !== "DOWN") d = "UP";
+  if (dir === "RIGHT" && d !== "LEFT") d = "RIGHT";
+  if (dir === "DOWN" && d !== "UP") d = "DOWN";
+}
+
+// Lógica do jogo da cobrinha
 function draw() {
-  // Fundo com textura de grade clara
-  ctx.fillStyle = "#0a1a1f";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  for (let x = 0; x < canvas.width; x += box) {
-    for (let y = 0; y < canvas.height; y += box) {
-      ctx.strokeStyle = "#072b33";
-      ctx.strokeRect(x, y, box, box);
-    }
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, 400, 400);
+
+  for (let i = 0; i < snake.length; i++) {
+    ctx.fillStyle = i === 0 ? "#00ff88" : "#00cc66";
+    ctx.fillRect(snake[i].x, snake[i].y, box, box);
   }
 
-  // Mostrar pontuação no topo
-  ctx.fillStyle = "white";
-  ctx.font = "20px Arial";
-  ctx.fillText(`Pontuação: ${score}`, 10, 25);
+  ctx.fillStyle = "red";
+  ctx.fillRect(food.x, food.y, box, box);
 
-  // Desenhar a comida com um círculo vermelho com sombra
-  ctx.fillStyle = "crimson";
-  ctx.shadowColor = "rgba(255,0,0,0.7)";
-  ctx.shadowBlur = 10;
-  ctx.beginPath();
-  ctx.arc(food.x + box/2, food.y + box/2, box/2 - 2, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.shadowBlur = 0;
+  let head = { x: snake[0].x, y: snake[0].y };
 
-  // Desenhar a cobrinha: cabeça verde limão, corpo em verde com sombra suave
-  snake.forEach((part, i) => {
-    if (i === 0) {
-      ctx.fillStyle = "#b6ff00"; // cabeça verde limão
-      ctx.shadowColor = "rgba(182,255,0,0.8)";
-      ctx.shadowBlur = 15;
-    } else {
-      ctx.fillStyle = "#3cb371"; // corpo verde médio
-      ctx.shadowColor = "rgba(60,179,113,0.6)";
-      ctx.shadowBlur = 8;
-    }
-    ctx.fillRect(part.x, part.y, box, box);
-    ctx.shadowBlur = 0;
-  });
-
-  // Atualiza posição da cabeça da cobra
-  let headX = snake[0].x;
-  let headY = snake[0].y;
-  if (d === "LEFT") headX -= box;
-  if (d === "UP") headY -= box;
-  if (d === "RIGHT") headX += box;
-  if (d === "DOWN") headY += box;
+  if (d === "LEFT") head.x -= box;
+  if (d === "UP") head.y -= box;
+  if (d === "RIGHT") head.x += box;
+  if (d === "DOWN") head.y += box;
 
   // Comeu comida
-  if (headX === food.x && headY === food.y) {
+  if (head.x === food.x && head.y === food.y) {
+    score++;
     food = {
       x: Math.floor(Math.random() * 19) * box,
       y: Math.floor(Math.random() * 19) * box,
     };
-    score++;
   } else {
     snake.pop();
   }
 
-  let newHead = { x: headX, y: headY };
-
-  // Checar colisão com borda ou com o próprio corpo
+  // Bateu nas paredes ou no próprio corpo
   if (
-    headX < 0 || headX >= canvas.width ||
-    headY < 0 || headY >= canvas.height ||
-    snake.some(s => s.x === newHead.x && s.y === newHead.y)
+    head.x < 0 ||
+    head.x >= 400 ||
+    head.y < 0 ||
+    head.y >= 400 ||
+    collision(head, snake)
   ) {
-    clearInterval(game);
-    gameStarted = false;
-    animarGameOver();
+    clearInterval(gameLoop);
+    gameOverAnim = true;
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText("Game Over", 120, 200);
     return;
   }
 
-  snake.unshift(newHead);
+  snake.unshift(head);
+
+  // Pontuação
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.fillText("Pontuação: " + score, 10, 390);
 }
 
-// Animação simples de piscar a tela em vermelho para Game Over
-function animarGameOver() {
-  gameOverAnim = true;
-  let count = 0;
-  const piscar = setInterval(() => {
-    if (count % 2 === 0) {
-      canvas.style.backgroundColor = "rgba(255,0,0,0.7)";
-    } else {
-      canvas.style.backgroundColor = "";
+function collision(head, array) {
+  for (let i = 0; i < array.length; i++) {
+    if (head.x === array[i].x && head.y === array[i].y) {
+      return true;
     }
-    count++;
-    if (count > 5) {
-      clearInterval(piscar);
-      canvas.style.backgroundColor = "";
-      alert(`Game Over! Sua pontuação foi: ${score}`);
-      document.getElementById("btnReiniciar").style.display = "inline-block";
-    }
-  }, 300);
+  }
+  return false;
 }
 
-/* ----- Jogo da Memória ----- */
-
-function iniciarMemoria() {
+// Jogo da Memória
+function startMemoria() {
   const container = document.getElementById("memoriaContainer");
+  container.style.display = "flex";
+  canvas.style.display = "none";
   container.innerHTML = "";
-  const emojis = ['🍎','🍌','🍇','🍓','🍍','🍒'];
-  const cards = [...emojis, ...emojis].sort(() => 0.5 - Math.random());
-  let first = null;
-  let lock = false;
 
-  cards.forEach((emoji) => {
+  let symbols = ['🍎','🍌','🍇','🍓','🍍','🥝'];
+  let cards = symbols.concat(symbols).sort(() => 0.5 - Math.random());
+
+  cards.forEach(simbolo => {
     const card = document.createElement("div");
     card.className = "card-memoria";
-    card.textContent = "";
-    card.dataset.emoji = emoji;
-    card.addEventListener("click", () => {
-      if (lock || card.classList.contains("matched") || card.textContent) return;
-      card.textContent = emoji;
-      if (!first) {
-        first = card;
-      } else {
-        if (first.dataset.emoji === card.dataset.emoji) {
-          first.classList.add("matched");
-          card.classList.add("matched");
-          first = null;
-        } else {
-          lock = true;
-          setTimeout(() => {
-            first.textContent = "";
-            card.textContent = "";
-            first = null;
-            lock = false;
-          }, 1000);
-        }
-      }
-    });
+    card.textContent = "❓";
+    card.dataset.simbolo = simbolo;
+    card.onclick = virarCarta;
     container.appendChild(card);
   });
+
+  let abertas = [];
+
+  function virarCarta() {
+    if (abertas.length < 2 && this.textContent === "❓") {
+      this.textContent = this.dataset.simbolo;
+      abertas.push(this);
+
+      if (abertas.length === 2) {
+        if (abertas[0].dataset.simbolo !== abertas[1].dataset.simbolo) {
+          setTimeout(() => {
+            abertas.forEach(c => c.textContent = "❓");
+            abertas = [];
+          }, 700);
+        } else {
+          abertas = [];
+        }
+      }
+    }
+  }
 }
