@@ -4,8 +4,11 @@ function mostrarGaleria() {
 }
 
 function iniciarJogo(nome) {
+  // Esconder todos elementos de jogos
   document.getElementById('gameCanvas').style.display = 'none';
   document.getElementById('memoriaContainer').style.display = 'none';
+  const btnReiniciar = document.getElementById('btnReiniciar');
+  if (btnReiniciar) btnReiniciar.style.display = 'none';
 
   if (nome === 'snake') {
     document.getElementById('gameCanvas').style.display = 'block';
@@ -18,56 +21,146 @@ function iniciarJogo(nome) {
   }
 }
 
-// Snake
+/* ----- Jogo da Cobrinha (Snake) ----- */
+
+let game; 
+let snake = [];
+let food = {};
+let d;
+const box = 20;
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+let gameOverAnim = false;
+
 function iniciarSnake() {
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
-  const box = 20;
-  let snake = [{ x: 9 * box, y: 10 * box }];
-  let food = { x: Math.floor(Math.random() * 19) * box, y: Math.floor(Math.random() * 19) * box };
-  let d;
-  let game;
-  document.addEventListener("keydown", direction);
-  function direction(event) {
-    if (event.keyCode === 37 && d !== "RIGHT") d = "LEFT";
-    if (event.keyCode === 38 && d !== "DOWN") d = "UP";
-    if (event.keyCode === 39 && d !== "LEFT") d = "RIGHT";
-    if (event.keyCode === 40 && d !== "UP") d = "DOWN";
-  }
-  function draw() {
-    ctx.clearRect(0, 0, 400, 400);
-    for (let i = 0; i < snake.length; i++) {
-      ctx.fillStyle = i === 0 ? "green" : "white";
-      ctx.fillRect(snake[i].x, snake[i].y, box, box);
-    }
-    ctx.fillStyle = "red";
-    ctx.fillRect(food.x, food.y, box, box);
-    let headX = snake[0].x;
-    let headY = snake[0].y;
-    if (d === "LEFT") headX -= box;
-    if (d === "UP") headY -= box;
-    if (d === "RIGHT") headX += box;
-    if (d === "DOWN") headY += box;
-    if (headX === food.x && headY === food.y) {
-      food = { x: Math.floor(Math.random() * 19) * box, y: Math.floor(Math.random() * 19) * box };
-    } else {
-      snake.pop();
-    }
-    let newHead = { x: headX, y: headY };
-    if (
-      headX < 0 || headX >= 400 || headY < 0 || headY >= 400 ||
-      snake.some((s) => s.x === newHead.x && s.y === newHead.y)
-    ) {
-      clearInterval(game);
-      alert("Game Over!");
-    }
-    snake.unshift(newHead);
-  }
   clearInterval(game);
-  game = setInterval(draw, 100);
+  d = null;
+  snake = [{ x: 9 * box, y: 10 * box }];
+  food = { x: Math.floor(Math.random() * 19) * box, y: Math.floor(Math.random() * 19) * box };
+  gameOverAnim = false;
+
+  // Criar botão reiniciar se não existir
+  if (!document.getElementById("btnReiniciar")) {
+    const btn = document.createElement("button");
+    btn.id = "btnReiniciar";
+    btn.textContent = "Reiniciar";
+    btn.style.display = "none";
+    btn.style.marginTop = "20px";
+    btn.style.padding = "10px 20px";
+    btn.style.fontSize = "1.2em";
+    btn.style.cursor = "pointer";
+    btn.onclick = () => {
+      btn.style.display = "none";
+      iniciarSnake();
+    };
+    canvas.parentNode.appendChild(btn);
+  }
+  document.getElementById("btnReiniciar").style.display = "none";
+
+  document.addEventListener("keydown", direction);
+
+  game = setInterval(draw, 150); // velocidade mais lenta
 }
 
-// Memória
+function direction(event) {
+  if (gameOverAnim) return; // não aceitar comandos se acabou
+  if (event.keyCode === 37 && d !== "RIGHT") d = "LEFT";
+  else if (event.keyCode === 38 && d !== "DOWN") d = "UP";
+  else if (event.keyCode === 39 && d !== "LEFT") d = "RIGHT";
+  else if (event.keyCode === 40 && d !== "UP") d = "DOWN";
+}
+
+function draw() {
+  // Fundo com textura de grade clara
+  ctx.fillStyle = "#0a1a1f";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  for (let x = 0; x < canvas.width; x += box) {
+    for (let y = 0; y < canvas.height; y += box) {
+      ctx.strokeStyle = "#072b33";
+      ctx.strokeRect(x, y, box, box);
+    }
+  }
+
+  // Desenhar a comida com um círculo vermelho com sombra
+  ctx.fillStyle = "crimson";
+  ctx.shadowColor = "rgba(255,0,0,0.7)";
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(food.x + box/2, food.y + box/2, box/2 - 2, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Desenhar a cobrinha: cabeça verde limão, corpo em verde com sombra suave
+  snake.forEach((part, i) => {
+    if (i === 0) {
+      ctx.fillStyle = "#b6ff00"; // cabeça verde limão
+      ctx.shadowColor = "rgba(182,255,0,0.8)";
+      ctx.shadowBlur = 15;
+    } else {
+      ctx.fillStyle = "#3cb371"; // corpo verde médio
+      ctx.shadowColor = "rgba(60,179,113,0.6)";
+      ctx.shadowBlur = 8;
+    }
+    ctx.fillRect(part.x, part.y, box, box);
+    ctx.shadowBlur = 0;
+  });
+
+  // Atualiza posição da cabeça da cobra
+  let headX = snake[0].x;
+  let headY = snake[0].y;
+  if (d === "LEFT") headX -= box;
+  if (d === "UP") headY -= box;
+  if (d === "RIGHT") headX += box;
+  if (d === "DOWN") headY += box;
+
+  // Comeu comida
+  if (headX === food.x && headY === food.y) {
+    food = {
+      x: Math.floor(Math.random() * 19) * box,
+      y: Math.floor(Math.random() * 19) * box,
+    };
+  } else {
+    snake.pop();
+  }
+
+  let newHead = { x: headX, y: headY };
+
+  // Checar colisão com borda ou com o próprio corpo
+  if (
+    headX < 0 || headX >= canvas.width ||
+    headY < 0 || headY >= canvas.height ||
+    snake.some(s => s.x === newHead.x && s.y === newHead.y)
+  ) {
+    clearInterval(game);
+    animarGameOver();
+    return;
+  }
+
+  snake.unshift(newHead);
+}
+
+// Animação simples de piscar a tela em vermelho para Game Over
+function animarGameOver() {
+  gameOverAnim = true;
+  let count = 0;
+  const piscar = setInterval(() => {
+    if (count % 2 === 0) {
+      canvas.style.backgroundColor = "rgba(255,0,0,0.7)";
+    } else {
+      canvas.style.backgroundColor = "";
+    }
+    count++;
+    if (count > 5) {
+      clearInterval(piscar);
+      canvas.style.backgroundColor = "";
+      alert("Game Over!");
+      document.getElementById("btnReiniciar").style.display = "inline-block";
+    }
+  }, 300);
+}
+
+/* ----- Jogo da Memória ----- */
+
 function iniciarMemoria() {
   const container = document.getElementById("memoriaContainer");
   container.innerHTML = "";
