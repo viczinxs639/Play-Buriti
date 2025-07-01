@@ -14,7 +14,7 @@ let gameLoop = null;
 let gameStarted = false;
 let gameOverAnim = false;
 
-// Iniciar jogo selecionado
+// Iniciar jogo
 function iniciarJogo(jogo) {
   canvas = document.getElementById("gameCanvas");
   ctx = canvas.getContext("2d");
@@ -35,7 +35,6 @@ function iniciarJogo(jogo) {
 function startSnake() {
   canvas.style.display = "block";
   score = 0;
-  d = "";
   gameOverAnim = false;
   snake = [{ x: 9 * box, y: 9 * box }];
   food = {
@@ -44,11 +43,11 @@ function startSnake() {
   };
 
   document.addEventListener("keydown", direction);
+  setupSwipeControls(canvas);
   gameStarted = true;
   gameLoop = setInterval(draw, 200);
 }
 
-// Teclado
 function direction(event) {
   if (!gameStarted || gameOverAnim) return;
   if (event.keyCode === 37 && d !== "RIGHT") d = "LEFT";
@@ -57,16 +56,32 @@ function direction(event) {
   if (event.keyCode === 40 && d !== "UP") d = "DOWN";
 }
 
-// Toque (celular)
-function setDirection(dir) {
-  if (!gameStarted || gameOverAnim) return;
-  if (dir === "LEFT" && d !== "RIGHT") d = "LEFT";
-  if (dir === "UP" && d !== "DOWN") d = "UP";
-  if (dir === "RIGHT" && d !== "LEFT") d = "RIGHT";
-  if (dir === "DOWN" && d !== "UP") d = "DOWN";
+// Swipe (celular)
+function setupSwipeControls(element) {
+  let startX, startY;
+
+  element.addEventListener("touchstart", function (e) {
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+  });
+
+  element.addEventListener("touchend", function (e) {
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 20 && d !== "LEFT") d = "RIGHT";
+      else if (dx < -20 && d !== "RIGHT") d = "LEFT";
+    } else {
+      if (dy > 20 && d !== "UP") d = "DOWN";
+      else if (dy < -20 && d !== "DOWN") d = "UP";
+    }
+  });
 }
 
-// Desenhar Snake
+// Desenho da Snake
 function draw() {
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, 400, 400);
@@ -80,7 +95,6 @@ function draw() {
   ctx.fillRect(food.x, food.y, box, box);
 
   let head = { x: snake[0].x, y: snake[0].y };
-
   if (d === "LEFT") head.x -= box;
   if (d === "UP") head.y -= box;
   if (d === "RIGHT") head.x += box;
@@ -97,10 +111,8 @@ function draw() {
   }
 
   if (
-    head.x < 0 ||
-    head.x >= 400 ||
-    head.y < 0 ||
-    head.y >= 400 ||
+    head.x < 0 || head.x >= 400 ||
+    head.y < 0 || head.y >= 400 ||
     collision(head, snake)
   ) {
     clearInterval(gameLoop);
@@ -112,22 +124,16 @@ function draw() {
   }
 
   snake.unshift(head);
-
   ctx.fillStyle = "white";
   ctx.font = "20px Arial";
   ctx.fillText("Pontuação: " + score, 10, 390);
 }
 
 function collision(head, array) {
-  for (let i = 0; i < array.length; i++) {
-    if (head.x === array[i].x && head.y === array[i].y) {
-      return true;
-    }
-  }
-  return false;
+  return array.some(part => part.x === head.x && part.y === head.y);
 }
 
-// Memória
+// Jogo da memória
 function startMemoria() {
   const container = document.getElementById("memoriaContainer");
   container.style.display = "flex";
