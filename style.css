@@ -68,27 +68,70 @@ canvas {
   height: auto;
 }
 
+/* Memória */
 #memoriaContainer {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#memoriaInfo {
+  margin-bottom: 10px;
+}
+
+#btnIniciarMemoria, #btnProximaFase {
+  background-color: #00ff88;
+  color: black;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 1.1em;
+  cursor: pointer;
+  box-shadow: 0 0 8px #00ff88;
+}
+
+#btnIniciarMemoria:hover, #btnProximaFase:hover {
+  background-color: #00cc66;
+}
+
+#memoriaFase {
+  font-size: 1.2em;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+#cartasContainer {
   display: flex;
   flex-wrap: wrap;
-  width: 260px;
-  margin: 20px auto;
-  gap: 10px;
   justify-content: center;
+  gap: 10px;
+  max-width: 340px;
+  margin: 0 auto;
 }
 
 .card-memoria {
   width: 60px;
   height: 60px;
   background: #444;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 2em;
+  font-size: 2.5em;
   display: flex;
   align-items: center;
   justify-content: center;
+  user-select: none;
+  box-shadow: 0 0 5px #00ff88;
+  transition: background-color 0.3s;
 }
 
+.card-memoria.revelada {
+  background-color: #00cc66;
+  color: black;
+  cursor: default;
+  box-shadow: 0 0 12px #00ff88;
+}
+
+/* Responsividade */
 @media (max-width: 600px) {
   .card {
     width: 90%;
