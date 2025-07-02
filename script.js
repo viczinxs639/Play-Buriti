@@ -248,11 +248,139 @@ document.getElementById("btnProximaFase").addEventListener("click", () => {
   iniciarMemoria();
 });
 
-// === TETRIS (Placeholder) ===
+
+// === TETRIS ===
+const ROWS = 20;
+const COLS = 10;
+const BLOCK_SIZE = 20;
+tetrisCanvas.width = COLS * BLOCK_SIZE;
+tetrisCanvas.height = ROWS * BLOCK_SIZE;
+
+let board, currentPiece, gameInterval;
+
+const SHAPES = {
+  I: [[1, 1, 1, 1]],
+  O: [[1, 1], [1, 1]],
+  T: [[0, 1, 0], [1, 1, 1]],
+  S: [[0, 1, 1], [1, 1, 0]],
+  Z: [[1, 1, 0], [0, 1, 1]],
+  J: [[1, 0, 0], [1, 1, 1]],
+  L: [[0, 0, 1], [1, 1, 1]]
+};
+
+const COLORS = {
+  I: "cyan", O: "yellow", T: "purple", S: "green", Z: "red", J: "blue", L: "orange"
+};
+
 function iniciarTetris() {
-  tetrisCtx.fillStyle = "#222";
-  tetrisCtx.fillRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
-  tetrisCtx.fillStyle = "white";
-  tetrisCtx.font = "16px Arial";
-  tetrisCtx.fillText("Tetris em construção...", 20, 200);
+  board = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
+  gerarPeca();
+  clearInterval(gameInterval);
+  gameInterval = setInterval(atualizarTetris, 500);
+  desenharTetris();
 }
+
+function gerarPeca() {
+  const tipos = Object.keys(SHAPES);
+  const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+  currentPiece = {
+    shape: SHAPES[tipo],
+    color: COLORS[tipo],
+    x: Math.floor(COLS / 2) - 1,
+    y: 0
+  };
+}
+
+function moverPeca(dx, dy) {
+  currentPiece.x += dx;
+  currentPiece.y += dy;
+  if (colide()) {
+    currentPiece.x -= dx;
+    currentPiece.y -= dy;
+    return false;
+  }
+  return true;
+}
+
+function colide() {
+  const { shape, x, y } = currentPiece;
+  for (let r = 0; r < shape.length; r++) {
+    for (let c = 0; c < shape[r].length; c++) {
+      if (shape[r][c]) {
+        let newY = y + r;
+        let newX = x + c;
+        if (newY >= ROWS || newX < 0 || newX >= COLS || board[newY][newX]) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function fixarPeca() {
+  const { shape, color, x, y } = currentPiece;
+  shape.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      if (cell) board[y + r][x + c] = color;
+    });
+  });
+}
+
+function limparLinhas() {
+  board = board.filter(row => row.some(cell => !cell));
+  while (board.length < ROWS) {
+    board.unshift(Array(COLS).fill(""));
+  }
+}
+
+function atualizarTetris() {
+  if (!moverPeca(0, 1)) {
+    fixarPeca();
+    limparLinhas();
+    gerarPeca();
+    if (colide()) {
+      clearInterval(gameInterval);
+      alert("Game Over");
+    }
+  }
+  desenharTetris();
+}
+
+function desenharTetris() {
+  tetrisCtx.clearRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
+  board.forEach((row, r) => {
+    row.forEach((color, c) => {
+      if (color) desenharBloco(c, r, color);
+    });
+  });
+  const { shape, color, x, y } = currentPiece;
+  shape.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      if (cell) desenharBloco(x + c, y + r, color);
+    });
+  });
+}
+
+function desenharBloco(x, y, color) {
+  tetrisCtx.fillStyle = color;
+  tetrisCtx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+}
+
+document.addEventListener("keydown", e => {
+  if (jogo !== "tetris") return;
+  if (e.key === "ArrowLeft") moverPeca(-1, 0);
+  if (e.key === "ArrowRight") moverPeca(1, 0);
+  if (e.key === "ArrowDown") moverPeca(0, 1);
+});
+
+document.querySelectorAll(".arrow-btn").forEach(btn => {
+  btn.addEventListener("touchstart", () => {
+    const dir = btn.dataset.dir;
+    if (jogo === "tetris") {
+      if (dir === "LEFT") moverPeca(-1, 0);
+      if (dir === "RIGHT") moverPeca(1, 0);
+      if (dir === "DOWN") moverPeca(0, 1);
+    }
+  });
+});
