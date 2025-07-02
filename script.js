@@ -39,6 +39,9 @@ const PIECES = [
   { shape: [[0,0,1],[1,1,1]], color: 'orange' }    // L
 ];
 
+// Variável para identificar o jogo ativo
+let jogoAtivo = null;
+
 // Mostra a galeria de jogos (chamado na tela inicial)
 function iniciarJogo(jogo) {
   clearInterval(gameLoop);
@@ -49,6 +52,7 @@ function iniciarJogo(jogo) {
   cartas = [];
   fase = 1;
   score = 0;
+  jogoAtivo = jogo;
 
   canvas.style.display = "none";
   tetrisCanvas.style.display = "none";
@@ -101,14 +105,66 @@ function setupArrowButtons(callback) {
   });
 }
 
+// FUNÇÃO QUE ESCUTA O TECLADO PARA TODOS OS JOGOS
+document.addEventListener("keydown", function (e) {
+  // Se no celular, ignore o teclado para não conflitar
+  if (isMobile()) return;
+
+  if (jogoAtivo === "snake") {
+    switch (e.key) {
+      case "ArrowLeft":
+        if (d !== "RIGHT") d = "LEFT";
+        break;
+      case "ArrowUp":
+        if (d !== "DOWN") d = "UP";
+        break;
+      case "ArrowRight":
+        if (d !== "LEFT") d = "RIGHT";
+        break;
+      case "ArrowDown":
+        if (d !== "UP") d = "DOWN";
+        break;
+    }
+  } else if (jogoAtivo === "pong") {
+    const step = 15;
+    if (e.key === "ArrowUp") pongPlayerY -= step;
+    else if (e.key === "ArrowDown") pongPlayerY += step;
+  } else if (jogoAtivo === "tetris") {
+    switch (e.key) {
+      case "ArrowLeft":
+        if (!collides(currentPiece.shape, currentX - 1, currentY)) currentX--;
+        break;
+      case "ArrowRight":
+        if (!collides(currentPiece.shape, currentX + 1, currentY)) currentX++;
+        break;
+      case "ArrowDown":
+        if (!collides(currentPiece.shape, currentX, currentY + 1)) currentY++;
+        break;
+      case "ArrowUp":
+        const rotated = rotate(currentPiece.shape);
+        if (!collides(rotated, currentX, currentY)) currentPiece.shape = rotated;
+        break;
+    }
+    drawBoard();
+  }
+});
+
+// Função para detectar celular (simplificada)
+function isMobile() {
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+}
+
 // === SNAKE ===
 function startSnake() {
+  jogoAtivo = "snake";
   document.getElementById("controlesSnake").style.display = "none";
   canvas.style.display = "block";
-  document.getElementById("mobileControls").style.display = "block";
+  document.getElementById("mobileControls").style.display = isMobile() ? "block" : "none";
 
-  setupSwipeControls(canvas, swipeSnake);
-  setupArrowButtons(swipeSnake);
+  if (isMobile()) {
+    setupSwipeControls(canvas, swipeSnake);
+    setupArrowButtons(swipeSnake);
+  }
 
   score = 0;
   d = "RIGHT";
@@ -179,9 +235,10 @@ function drawSnake() {
 // === PONG ===
 let pongBallSpeed = 3;
 function startPong() {
+  jogoAtivo = "pong";
   document.getElementById("controlesPong").style.display = "none";
   canvas.style.display = "block";
-  document.getElementById("mobileControls").style.display = "block";
+  document.getElementById("mobileControls").style.display = isMobile() ? "block" : "none";
 
   pongPlayerY = canvas.height / 2 - 35;
   pongAIY = canvas.height / 2 - 35;
@@ -192,8 +249,10 @@ function startPong() {
   pongPlayerScore = 0;
   pongAIScore = 0;
 
-  setupSwipeControls(canvas, swipePong);
-  setupArrowButtons(swipePong);
+  if (isMobile()) {
+    setupSwipeControls(canvas, swipePong);
+    setupArrowButtons(swipePong);
+  }
 
   clearInterval(gameLoop);
   gameLoop = setInterval(drawPong, 20);
@@ -283,6 +342,7 @@ function resetPong() {
 
 // === JOGO DA MEMÓRIA ===
 function startMemoria() {
+  jogoAtivo = "memoria";
   document.getElementById("memoriaContainer").style.display = "block";
   document.getElementById("galeriaJogos").style.display = "none";
   document.getElementById("mobileControls").style.display = "none";
@@ -359,11 +419,12 @@ function selecionarCarta(carta) {
 
 // === JOGO TETRIS ===
 function startTetris() {
+  jogoAtivo = "tetris";
   document.getElementById("controlesTetris").style.display = "none";
   document.getElementById("controlesSnake").style.display = "none";
   document.getElementById("controlesPong").style.display = "none";
   document.getElementById("memoriaContainer").style.display = "none";
-  document.getElementById("mobileControls").style.display = "block";
+  document.getElementById("mobileControls").style.display = isMobile() ? "block" : "none";
   canvas.style.display = "none";
   tetrisCanvas.style.display = "block";
 
@@ -474,24 +535,3 @@ function tetrisLoop() {
   }
   drawBoard();
 }
-
-// Controles teclado tetris
-document.addEventListener("keydown", function (e) {
-  if (tetrisCanvas.style.display === "none") return;
-  switch (e.key) {
-    case "ArrowLeft":
-      if (!collides(currentPiece.shape, currentX - 1, currentY)) currentX--;
-      break;
-    case "ArrowRight":
-      if (!collides(currentPiece.shape, currentX + 1, currentY)) currentX++;
-      break;
-    case "ArrowDown":
-      if (!collides(currentPiece.shape, currentX, currentY + 1)) currentY++;
-      break;
-    case "ArrowUp":
-      const rotated = rotate(currentPiece.shape);
-      if (!collides(rotated, currentX, currentY)) currentPiece.shape = rotated;
-      break;
-  }
-  drawBoard();
-});
