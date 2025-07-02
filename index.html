@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Play Buriti - Tetris</title>
+  <title>Play Buriti</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <div id="telaInicial" class="tela-inicial">
     <h1>Play Buriti</h1>
     <p>Site desenvolvido por Victor Gabriel<br />Escola Estadual São José do Buriti</p>
@@ -18,18 +17,34 @@
     <button id="btnVoltar" class="btn">Voltar</button>
     <h2>Escolha um jogo:</h2>
     <div class="botoes-jogos">
+      <button onclick="iniciarJogo('snake')" class="btn jogo-btn">Snake</button>
+      <button onclick="iniciarJogo('pong')" class="btn jogo-btn">Pong</button>
+      <button onclick="iniciarJogo('memoria')" class="btn jogo-btn">Jogo da Memória</button>
       <button onclick="iniciarJogo('tetris')" class="btn jogo-btn">Tetris</button>
     </div>
   </div>
 
-  <canvas id="tetrisCanvas" width="200" height="400" style="display:none; background:#000; border: 3px solid #fff; border-radius: 10px;"></canvas>
+  <!-- Canvas para Snake e Pong (mesmo canvas usado) -->
+  <canvas id="gameCanvas" width="400" height="400" style="display:none; background:#000; border-radius: 10px;"></canvas>
 
-  <!-- Controles móveis para Tetris -->
-  <div id="tetrisControls" class="mobile-controls" style="display:none;">
+  <!-- Canvas para Tetris separado -->
+  <canvas id="tetrisCanvas" width="200" height="400" style="display:none; background:#000; border-radius: 10px;"></canvas>
+
+  <!-- Memória -->
+  <div id="memoriaContainer" style="display:none; text-align:center; margin-top:20px;">
+    <h3 id="faseAtual">Fase 1</h3>
+    <div id="memoriaGrid" class="memoria-grid"></div>
+    <button id="btnIniciarMemoria" class="btn">Iniciar</button>
+    <button id="btnProximaFase" class="btn" style="display:none;">Próxima Fase</button>
+  </div>
+
+  <!-- Controles móveis para jogos -->
+  <div id="mobileControls" style="display:none;" class="mobile-controls">
+    <button id="btnUp" class="arrow-btn">▲</button>
     <button id="btnLeft" class="arrow-btn">◄</button>
-    <button id="btnRotate" class="arrow-btn">⟳</button>
     <button id="btnDown" class="arrow-btn">▼</button>
     <button id="btnRight" class="arrow-btn">►</button>
+    <button id="btnRotate" class="arrow-btn" style="display:none;">⟳</button>
   </div>
 
   <script src="script.js"></script>
