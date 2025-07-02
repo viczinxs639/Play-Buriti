@@ -20,18 +20,6 @@ body {
   margin-top: 50px;
 }
 
-.tela-inicial h1 {
-  font-size: 48px;
-  color: #fff176;
-  text-shadow: 2px 2px 5px #222;
-}
-
-.tela-inicial p {
-  font-size: 18px;
-  color: #eee;
-  margin-bottom: 20px;
-}
-
 .btn {
   background: #f39c12;
   border: none;
@@ -40,15 +28,8 @@ body {
   border-radius: 10px;
   color: #222;
   font-weight: bold;
-  cursor: pointer;
   font-size: 18px;
-  min-width: 150px;
-  transition: background 0.3s ease;
-}
-
-.btn:hover {
-  background: #d35400;
-  color: white;
+  cursor: pointer;
 }
 
 .botoes-jogos {
@@ -56,63 +37,13 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px;
-  margin-top: 20px;
-}
-
-.jogo-btn {
-  min-width: 120px;
-  font-size: 16px;
-  background: #3498db;
-  color: white;
-  border-radius: 8px;
-  padding: 10px 20px;
-  box-shadow: 0 4px 6px #2980b9;
-}
-
-.jogo-btn:hover {
-  background: #2980b9;
-  box-shadow: 0 6px 10px #1c5980;
 }
 
 canvas {
   margin-top: 20px;
   border: 3px solid #fff;
-  border-radius: 10px;
   background: #000;
-}
-
-#memoriaContainer {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.memoria-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 70px);
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 15px;
-}
-
-.carta {
-  width: 70px;
-  height: 70px;
-  border-radius: 8px;
-  background: #fff;
-  color: #000;
-  font-size: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 5px #2980b9;
-  cursor: pointer;
-  border: 2px solid #ccc;
-  transition: background 0.3s ease;
-}
-
-.carta.virada {
-  background: #ffeaa7;
-  border-color: #f39c12;
+  border-radius: 10px;
 }
 
 .mobile-controls {
@@ -122,47 +53,13 @@ canvas {
   transform: translateX(-50%);
   display: flex;
   gap: 15px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 10px 20px;
-  border-radius: 30px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border-radius: 20px;
 }
 
 .arrow-btn {
   background: #f39c12;
-  border: none;
-  color: #222;
-  font-size: 30px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 3px 6px #d35400;
-  transition: background 0.3s ease;
-}
-
-.arrow-btn:active {
-  background: #d35400;
-  color: white;
-}
-
-@media (max-width: 600px) {
-  .btn {
-    font-size: 16px;
-    padding: 12px 25px;
-  }
-
-  .botoes-jogos {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .memoria-grid {
-    grid-template-columns: repeat(3, 70px);
-  }
-
-  .arrow-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-  }
-}
+  color: black;
+  font-size: 24px;
+  border: none
