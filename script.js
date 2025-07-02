@@ -8,7 +8,7 @@ let score = 0;
 let pongPlayerY = 150;
 let pongAIY = 150;
 let pongBallX = 200, pongBallY = 200;
-let pongBallVX = 4, pongBallVY = 4;
+let pongBallVX = 3, pongBallVY = 3; // velocidade reduzida pra Pong
 let pongPlayerScore = 0, pongAIScore = 0;
 
 let emojis = ["🍎", "🍌", "🍇", "🍒", "🍉", "🍍", "🥝", "🍑"];
@@ -29,7 +29,7 @@ function iniciarJogo(jogo) {
   document.getElementById("memoriaContainer").style.display = "none";
   document.getElementById("controlesSnake").style.display = "none";
   document.getElementById("controlesPong").style.display = "none";
-  document.getElementById("controlesTetris")?.style.display = "none";
+  document.getElementById("controlesTetris").style.display = "none";
   document.getElementById("mobileControls").style.display = "none";
   clearInterval(gameLoop);
   d = "";
@@ -97,7 +97,7 @@ function startSnake() {
     y: Math.floor(Math.random() * 20)
   };
   clearInterval(gameLoop);
-  gameLoop = setInterval(drawSnake, 200); // velocidade reduzida
+  gameLoop = setInterval(drawSnake, 200);
 }
 
 function swipeSnake(direction) {
@@ -168,7 +168,7 @@ function startPong() {
   setupSwipeControls(canvas, pongSwipeHandler);
   setupArrowButtons(pongSwipeHandler);
   pongBallX = 200; pongBallY = 200;
-  pongBallVX = 4; pongBallVY = 4;
+  pongBallVX = 3; pongBallVY = 3;
   pongPlayerScore = 0; pongAIScore = 0;
   pongPlayerY = 150;
   pongAIY = 150;
@@ -182,104 +182,113 @@ function pongSwipeHandler(direction) {
 }
 
 function drawPong() {
-  // Fundo degradê
   let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
   grad.addColorStop(0, "#000000");
   grad.addColorStop(1, "#222222");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Limitar raquetes dentro do canvas
   if (pongPlayerY < 0) pongPlayerY = 0;
-  if (pongPlayerY > canvas.height - 80) pongPlayerY = canvas.height - 80;
-
+  if (pongPlayerY > canvas.height - 70) pongPlayerY = canvas.height - 70;
   if (pongAIY < 0) pongAIY = 0;
-  if (pongAIY > canvas.height - 80) pongAIY = canvas.height - 80;
+  if (pongAIY > canvas.height - 70) pongAIY = canvas.height - 70;
 
-  // Raquetes com sombras
-  ctx.fillStyle = "#4CAF50"; // jogador
-  ctx.shadowColor = "#2E7D32";
-  ctx.shadowBlur = 8;
-  ctx.fillRect(10, pongPlayerY, 10, 80);
+  // Raquete jogador
+  ctx.fillStyle = "#9b59b6";
+  ctx.fillRect(10, pongPlayerY, 10, 70);
 
-  ctx.fillStyle = "#F44336"; // IA
-  ctx.shadowColor = "#B71C1C";
-  ctx.shadowBlur = 8;
-  ctx.fillRect(380, pongAIY, 10, 80);
+  // Raquete IA
+  ctx.fillStyle = "#e74c3c";
+  ctx.fillRect(canvas.width - 20, pongAIY, 10, 70);
 
-  ctx.shadowBlur = 0;
-
-  // Bola com brilho e limitação nas bordas verticais
+  // Bola
+  ctx.fillStyle = "#1abc9c";
   ctx.beginPath();
-  let radgrad = ctx.createRadialGradient(pongBallX, pongBallY, 3, pongBallX, pongBallY, 10);
-  radgrad.addColorStop(0, "#FFF");
-  radgrad.addColorStop(1, "#AAA");
-  ctx.fillStyle = radgrad;
   ctx.arc(pongBallX, pongBallY, 10, 0, Math.PI * 2);
   ctx.fill();
 
+  // Movimento da bola
   pongBallX += pongBallVX;
   pongBallY += pongBallVY;
 
-  if (pongBallY < 10) {
-    pongBallY = 10;
-    pongBallVY *= -1;
-  }
-  if (pongBallY > canvas.height - 10) {
-    pongBallY = canvas.height - 10;
-    pongBallVY *= -1;
+  // Colisão com teto e chão
+  if (pongBallY + 10 > canvas.height || pongBallY - 10 < 0) pongBallVY = -pongBallVY;
+
+  // Colisão com raquetes
+  if (
+    pongBallX - 10 < 20 && 
+    pongBallY > pongPlayerY && pongBallY < pongPlayerY + 70
+  ) {
+    pongBallVX = -pongBallVX;
   }
 
   if (
-    (pongBallX < 20 && pongBallY > pongPlayerY && pongBallY < pongPlayerY + 80) ||
-    (pongBallX > 370 && pongBallY > pongAIY && pongBallY < pongAIY + 80)
-  ) pongBallVX *= -1;
+    pongBallX + 10 > canvas.width - 20 &&
+    pongBallY > pongAIY && pongBallY < pongAIY + 70
+  ) {
+    pongBallVX = -pongBallVX;
+  }
 
+  // IA se move (60% chance de acertar)
+  if (Math.random() < 0.6) {
+    if (pongBallY > pongAIY + 35) pongAIY += 3;
+    else if (pongBallY < pongAIY + 35) pongAIY -= 3;
+  }
+
+  // Pontuação
   if (pongBallX < 0) {
     pongAIScore++;
-    resetBall();
+    resetPong();
   }
-  if (pongBallX > 400) {
+  if (pongBallX > canvas.width) {
     pongPlayerScore++;
-    resetBall();
+    resetPong();
   }
 
-  // IA 60% acerto
-  if (pongBallVX > 0) {
-    if (Math.random() < 0.6) {
-      if (pongBallY > pongAIY + 40) pongAIY += 4;
-      else if (pongBallY < pongAIY + 40) pongAIY -= 4;
-    } else {
-      pongAIY += Math.random() > 0.5 ? 4 : -4;
-    }
-  }
-
-  ctx.fillStyle = "white";
+  ctx.fillStyle = "#fff";
   ctx.font = "20px Arial";
-  ctx.fillText("Você: " + pongPlayerScore, 20, 30);
-  ctx.fillText("IA: " + pongAIScore, 320, 30);
+  ctx.fillText(`Jogador: ${pongPlayerScore}`, 50, 30);
+  ctx.fillText(`IA: ${pongAIScore}`, canvas.width - 120, 30);
 }
 
-function resetBall() {
-  pongBallX = 200;
-  pongBallY = 200;
-  pongBallVX = Math.random() > 0.5 ? 4 : -4;
-  pongBallVY = Math.random() > 0.5 ? 4 : -4;
+function resetPong() {
+  pongBallX = canvas.width / 2;
+  pongBallY = canvas.height / 2;
+  pongBallVX = pongBallVX > 0 ? 3 : -3;
+  pongBallVY = (Math.random() * 4) - 2;
+  pongPlayerY = canvas.height / 2 - 35;
+  pongAIY = canvas.height / 2 - 35;
 }
 
 // === JOGO DA MEMÓRIA ===
 function startMemoria() {
-  canvas.style.display = "none";
   document.getElementById("memoriaContainer").style.display = "block";
-  document.getElementById("btnIniciarMemoria").onclick = iniciarFaseMemoria;
+  document.getElementById("galeriaJogos").style.display = "none";
+  document.getElementById("mobileControls").style.display = "none";
+  document.getElementById("controlesSnake").style.display = "none";
+  document.getElementById("controlesPong").style.display = "none";
+  document.getElementById("controlesTetris").style.display = "none";
+
+  fase = 1;
+  criarFase(fase);
+
+  document.getElementById("btnIniciarMemoria").onclick = () => {
+    cartas.forEach(c => {
+      c.classList.remove("revelada");
+      c.innerHTML = "❓";
+      c.style.pointerEvents = "auto";
+    });
+    cartasSelecionadas = [];
+  };
+
   document.getElementById("btnProximaFase").onclick = () => {
     fase++;
-    iniciarFaseMemoria();
+    criarFase(fase);
+    document.getElementById("btnProximaFase").style.display = "none";
   };
-  document.getElementById("memoriaFase").innerText = "Fase: " + fase;
 }
 
-function iniciarFaseMemoria() {
+function criarFase(fase) {
   document.getElementById("btnProximaFase").style.display = "none";
   const cartasContainer = document.getElementById("cartasContainer");
   cartasContainer.innerHTML = "";
@@ -327,7 +336,7 @@ function selecionarCarta(carta) {
   }
 }
 
-// === TETRIS ===
+// === JOGO TETRIS ===
 let tetrisCanvas, tetrisCtx;
 let tetrisInterval;
 const ROWS = 20;
@@ -355,8 +364,6 @@ function startTetris() {
   document.getElementById("memoriaContainer").style.display = "none";
   document.getElementById("mobileControls").style.display = "block";
 
-  canvas.style.display = "none";
-  
   if (!tetrisCanvas) {
     tetrisCanvas = document.createElement("canvas");
     tetrisCanvas.id = "tetrisCanvas";
@@ -365,7 +372,7 @@ function startTetris() {
     tetrisCtx = tetrisCanvas.getContext("2d");
     document.body.appendChild(tetrisCanvas);
 
-    // Setup toque para tetris
+    // Controle toque para tetris
     let touchStartX = null;
     tetrisCanvas.addEventListener("touchstart", e => {
       touchStartX = e.touches[0].clientX;
@@ -386,6 +393,7 @@ function startTetris() {
   }
 
   tetrisCanvas.style.display = "block";
+  canvas.style.display = "none";
   initBoard();
   spawnPiece();
   gameOver = false;
@@ -492,7 +500,7 @@ function tetrisLoop() {
   drawBoard();
 }
 
-// Teclado Tetris
+// Controles teclado tetris
 document.addEventListener("keydown", function(e){
   if(!tetrisCanvas || tetrisCanvas.style.display === "none") return;
   switch(e.key){
