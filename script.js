@@ -303,9 +303,132 @@ document.getElementById("btnProximaFase").addEventListener("click", () => {
   iniciarMemoria();
 });
 
-// === TETRIS (placeholder) ===
+// === TETRIS ===
+const COLS = 10;
+const ROWS = 20;
+const BLOCK_SIZE = 20;
+let board = [];
+let tetrisPiece;
+let dropInterval;
+let tetrisScore = 0;
+
 function iniciarTetris() {
-  // Aqui pode entrar seu Tetris futuramente
-  tetrisCanvas.getContext("2d").fillStyle = "#222";
-  tetrisCanvas.getContext("2d").fillRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
+  clearInterval(dropInterval);
+  board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+  tetrisScore = 0;
+  tetrisPiece = criarPeca();
+  desenharTetris();
+  dropInterval = setInterval(baixarPeca, 500);
 }
+
+function criarPeca() {
+  const pecas = [
+    [[1, 1, 1], [0, 1, 0]], // T
+    [[0, 2, 2], [2, 2, 0]], // S
+    [[3, 3, 0], [0, 3, 3]], // Z
+    [[4, 0, 0], [4, 4, 4]], // L
+    [[0, 0, 5], [5, 5, 5]], // J
+    [[6, 6], [6, 6]],       // O
+    [[0, 0, 0, 0], [7, 7, 7, 7]] // I
+  ];
+  const shape = pecas[Math.floor(Math.random() * pecas.length)];
+  return { shape, row: 0, col: 3 };
+}
+
+function desenharTetris() {
+  tetrisCtx.clearRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c]) desenharBloco(c, r, board[r][c]);
+    }
+  }
+
+  tetrisPiece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) desenharBloco(tetrisPiece.col + x, tetrisPiece.row + y, value);
+    });
+  });
+
+  tetrisCtx.fillStyle = "white";
+  tetrisCtx.font = "16px Arial";
+  tetrisCtx.fillText("Pontos: " + tetrisScore, 10, 20);
+}
+
+function desenharBloco(x, y, tipo) {
+  const cores = ["", "#9b59b6", "#2ecc71", "#e74c3c", "#f39c12", "#3498db", "#f1c40f", "#1abc9c"];
+  tetrisCtx.fillStyle = cores[tipo];
+  tetrisCtx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+}
+
+function mover(dx) {
+  tetrisPiece.col += dx;
+  if (colide()) tetrisPiece.col -= dx;
+}
+
+function rodar() {
+  const antiga = tetrisPiece.shape;
+  tetrisPiece.shape = tetrisPiece.shape[0].map((_, i) =>
+    tetrisPiece.shape.map(r => r[i]).reverse()
+  );
+  if (colide()) tetrisPiece.shape = antiga;
+}
+
+function baixarPeca() {
+  tetrisPiece.row++;
+  if (colide()) {
+    tetrisPiece.row--;
+    fixar();
+    limparLinhas();
+    tetrisPiece = criarPeca();
+    if (colide()) {
+      clearInterval(dropInterval);
+      tetrisCtx.fillStyle = "white";
+      tetrisCtx.font = "24px Arial";
+      tetrisCtx.fillText("Game Over", 40, 200);
+    }
+  }
+  desenharTetris();
+}
+
+function fixar() {
+  tetrisPiece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) board[tetrisPiece.row + y][tetrisPiece.col + x] = value;
+    });
+  });
+}
+
+function colide() {
+  return tetrisPiece.shape.some((row, y) => {
+    return row.some((value, x) => {
+      if (!value) return false;
+      const newX = tetrisPiece.col + x;
+      const newY = tetrisPiece.row + y;
+      return (
+        newX < 0 ||
+        newX >= COLS ||
+        newY >= ROWS ||
+        (newY >= 0 && board[newY][newX])
+      );
+    });
+  });
+}
+
+function limparLinhas() {
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (board[r].every(c => c !== 0)) {
+      board.splice(r, 1);
+      board.unshift(Array(COLS).fill(0));
+      tetrisScore += 10;
+    }
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if (jogo !== "tetris") return;
+  if (e.key === "ArrowLeft") mover(-1);
+  else if (e.key === "ArrowRight") mover(1);
+  else if (e.key === "ArrowDown") baixarPeca();
+  else if (e.key === "ArrowUp") rodar();
+});
