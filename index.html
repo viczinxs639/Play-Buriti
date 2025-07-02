@@ -7,34 +7,39 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Tela Inicial -->
   <div id="telaInicial" class="tela-inicial">
     <h1>Play Buriti</h1>
-    <p>Site desenvolvido por Victor Gabriel<br>Escola Estadual São José do Buriti</p>
+    <p>Site desenvolvido por Victor Gabriel<br />Escola Estadual São José do Buriti</p>
     <button id="btnEntrar" class="btn">Entrar nos Jogos</button>
   </div>
 
-  <div id="telaJogos" class="tela-jogos" style="display:none;">
+  <!-- Tela de Seleção de Jogos -->
+  <div id="telaJogos" class="tela-jogos" style="display: none;">
     <button id="btnVoltar" class="btn">Voltar</button>
     <h2>Escolha um jogo:</h2>
     <div class="botoes-jogos">
-      <button onclick="iniciarJogo('snake')" class="btn jogo-btn">Snake</button>
-      <button onclick="iniciarJogo('pong')" class="btn jogo-btn">Pong</button>
-      <button onclick="iniciarJogo('memoria')" class="btn jogo-btn">Jogo da Memória</button>
-      <button onclick="iniciarJogo('tetris')" class="btn jogo-btn">Tetris</button>
+      <button class="btn jogo-btn" onclick="iniciarJogo('snake')">Snake</button>
+      <button class="btn jogo-btn" onclick="iniciarJogo('pong')">Pong</button>
+      <button class="btn jogo-btn" onclick="iniciarJogo('memoria')">Jogo da Memória</button>
+      <button class="btn jogo-btn" onclick="iniciarJogo('tetris')">Tetris</button>
     </div>
   </div>
 
-  <canvas id="gameCanvas" width="400" height="400" style="display:none;"></canvas>
-  <canvas id="tetrisCanvas" width="200" height="400" style="display:none;"></canvas>
+  <!-- Canvas dos Jogos -->
+  <canvas id="gameCanvas" width="400" height="400" style="display: none;"></canvas>
+  <canvas id="tetrisCanvas" width="200" height="400" style="display: none;"></canvas>
 
-  <div id="memoriaContainer" style="display:none;">
+  <!-- Container Jogo da Memória -->
+  <div id="memoriaContainer" style="display: none;">
     <h3 id="faseAtual">Fase 1</h3>
     <div id="memoriaGrid" class="memoria-grid"></div>
     <button id="btnIniciarMemoria" class="btn">Iniciar</button>
-    <button id="btnProximaFase" class="btn" style="display:none;">Próxima Fase</button>
+    <button id="btnProximaFase" class="btn" style="display: none;">Próxima Fase</button>
   </div>
 
-  <div id="mobileControls" style="display:none;" class="mobile-controls">
+  <!-- Controles Mobile -->
+  <div id="mobileControls" class="mobile-controls" style="display: none;">
     <button class="arrow-btn" data-dir="UP">▲</button>
     <button class="arrow-btn" data-dir="LEFT">◄</button>
     <button class="arrow-btn" data-dir="DOWN">▼</button>
