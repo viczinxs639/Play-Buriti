@@ -170,22 +170,22 @@ function startPong() {
   pongBallX = 200; pongBallY = 200;
   pongBallVX = 3; pongBallVY = 3;
   pongPlayerScore = 0; pongAIScore = 0;
-  pongPlayerY = 150;
-  pongAIY = 150;
+  pongPlayerY = canvas.height / 2 - 35;
+  pongAIY = canvas.height / 2 - 35;
   clearInterval(gameLoop);
-  gameLoop = setInterval(drawPong, 16);
+  gameLoop = setInterval(drawPong, 20);
 }
 
 function pongSwipeHandler(direction) {
-  if (direction === "UP") pongPlayerY -= 20;
-  else if (direction === "DOWN") pongPlayerY += 20;
+  const step = 15;
+  if (direction === "UP") pongPlayerY -= step;
+  else if (direction === "DOWN") pongPlayerY += step;
+  else if (direction === "LEFT") pongPlayerY -= step;
+  else if (direction === "RIGHT") pongPlayerY += step;
 }
 
 function drawPong() {
-  let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  grad.addColorStop(0, "#000000");
-  grad.addColorStop(1, "#222222");
-  ctx.fillStyle = grad;
+  ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (pongPlayerY < 0) pongPlayerY = 0;
@@ -216,7 +216,7 @@ function drawPong() {
 
   // Colisão com raquetes
   if (
-    pongBallX - 10 < 20 && 
+    pongBallX - 10 < 20 &&
     pongBallY > pongPlayerY && pongBallY < pongPlayerY + 70
   ) {
     pongBallVX = -pongBallVX;
@@ -337,6 +337,8 @@ function selecionarCarta(carta) {
 }
 
 // === JOGO TETRIS ===
+// (Segue o código do Tetris conforme seu último pedido)
+
 let tetrisCanvas, tetrisCtx;
 let tetrisInterval;
 const ROWS = 20;
