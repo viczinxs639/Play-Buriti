@@ -24,27 +24,21 @@
     </div>
   </div>
 
-  <!-- Canvas para Snake e Pong -->
-  <canvas id="gameCanvas" width="400" height="400" style="display:none; background:#000; border-radius: 10px;"></canvas>
+  <canvas id="gameCanvas" width="400" height="400" style="display:none;"></canvas>
+  <canvas id="tetrisCanvas" width="200" height="400" style="display:none;"></canvas>
 
-  <!-- Canvas para Tetris -->
-  <canvas id="tetrisCanvas" width="200" height="400" style="display:none; background:#000; border-radius: 10px;"></canvas>
-
-  <!-- Container do Jogo da Memória -->
-  <div id="memoriaContainer" style="display:none; text-align:center; margin-top:20px;">
+  <div id="memoriaContainer" style="display:none;">
     <h3 id="faseAtual">Fase 1</h3>
     <div id="memoriaGrid" class="memoria-grid"></div>
     <button id="btnIniciarMemoria" class="btn">Iniciar</button>
     <button id="btnProximaFase" class="btn" style="display:none;">Próxima Fase</button>
   </div>
 
-  <!-- Controles móveis -->
-  <div id="mobileControls" style="display:none;" class="mobile-controls" aria-label="Controles móveis">
-    <button id="btnUp" class="arrow-btn" aria-label="Cima">▲</button>
-    <button id="btnLeft" class="arrow-btn" aria-label="Esquerda">◄</button>
-    <button id="btnDown" class="arrow-btn" aria-label="Baixo">▼</button>
-    <button id="btnRight" class="arrow-btn" aria-label="Direita">►</button>
-    <button id="btnRotate" class="arrow-btn" style="display:none;" aria-label="Rotacionar">⟳</button>
+  <div id="mobileControls" style="display:none;" class="mobile-controls">
+    <button class="arrow-btn" data-dir="UP">▲</button>
+    <button class="arrow-btn" data-dir="LEFT">◄</button>
+    <button class="arrow-btn" data-dir="DOWN">▼</button>
+    <button class="arrow-btn" data-dir="RIGHT">►</button>
   </div>
 
   <script src="script.js"></script>
