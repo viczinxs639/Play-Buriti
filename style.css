@@ -1,24 +1,100 @@
 body {
-  background-color: #111;
-  color: #fff;
-  font-family: sans-serif;
+  background-color: #121212;
+  color: #f0f0f0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: center;
   margin: 0;
   padding: 0;
 }
 
+#telaInicial {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  padding: 40px 20px;
+  border-radius: 15px;
+  margin: 40px auto;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(101, 64, 255, 0.6);
+}
+
+#telaInicial h1 {
+  font-size: 3em;
+  margin-bottom: 10px;
+  color: #fff;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+#telaInicial p {
+  font-size: 1.2em;
+  margin-bottom: 30px;
+  color: #dcdcdc;
+}
+
 button {
-  padding: 10px 20px;
-  margin: 10px;
-  font-size: 16px;
+  background: #6a11cb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 15px 30px;
+  font-size: 1.1em;
   cursor: pointer;
+  transition: background 0.3s ease;
+  box-shadow: 0 5px 15px rgba(106, 17, 203, 0.5);
+}
+
+button:hover {
+  background: #2575fc;
+}
+
+#galeriaJogos h2 {
+  color: #6a11cb;
+  text-shadow: 1px 1px 2px #2575fc;
+}
+
+#galeriaJogos button {
+  background: #2575fc;
+  margin: 10px;
+  box-shadow: 0 4px 10px rgba(37, 117, 252, 0.7);
+}
+
+#galeriaJogos button:hover {
+  background: #6a11cb;
 }
 
 canvas {
-  border: 2px solid white;
+  border: 2px solid #6a11cb;
+  background-color: #1a1a1a;
   display: none;
   margin: 20px auto;
-  background-color: black;
+  box-shadow: 0 0 10px #6a11cb;
+}
+
+#memoriaContainer {
+  background: #222;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 420px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #6a11cb;
+  color: #d0d0ff;
+}
+
+#cartasContainer .card-memoria {
+  background-color: #3a3a6d;
+  border: 2px solid #6a11cb;
+  color: #e0e0ff;
+  box-shadow: 0 0 5px #8f8fff;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+#cartasContainer .card-memoria.revelada {
+  background-color: #6a11cb;
+  color: white;
+  box-shadow: 0 0 15px #b0b0ff;
+}
+
+#mobileControls {
+  margin-top: 15px;
 }
 
 .setas {
@@ -28,25 +104,4 @@ canvas {
 .arrow-btn {
   font-size: 30px;
   margin: 5px;
-}
-
-#cartasContainer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 10px;
-  gap: 10px;
-}
-
-.card-memoria {
-  width: 60px;
-  height: 60px;
-  background-color: #333;
-  color: white;
-  font-size: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 2px solid white;
 }
