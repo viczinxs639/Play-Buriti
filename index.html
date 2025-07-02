@@ -2,45 +2,42 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Play Buriti - Jogos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Play Buriti</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <div id="telaInicial" class="tela-inicial">
-    <h1>Play Buriti</h1>
-    <p>Site desenvolvido por <strong>Victor Gabriel</strong></p>
-    <p>Escola Estadual São José do Buriti</p>
-    <button id="btnEntrar">Entrar nos Jogos</button>
+  <div id="telaInicial">
+    <h1>🎮 Play Buriti</h1>
+    <p>Site desenvolvido por Victor Gabriel<br>Escola Estadual São José do Buriti</p>
+    <button id="btnEntrar">Entrar nos jogos</button>
   </div>
 
-  <div id="telaJogos" class="tela-jogos" style="display:none;">
+  <div id="telaJogos" style="display: none;">
     <h2>Escolha um jogo</h2>
-    <button onclick="iniciarJogo('snake')">Snake (Cobrinha)</button>
-    <button onclick="iniciarJogo('pong')">Pong</button>
-    <button onclick="iniciarJogo('memoria')">Jogo da Memória</button>
-    <button onclick="iniciarJogo('tetris')">Tetris</button>
-    <button id="btnVoltar">Voltar</button>
+    <button onclick="iniciarJogo('snake')">🐍 Snake</button>
+    <button onclick="iniciarJogo('pong')">🏓 Pong</button>
+    <button onclick="iniciarJogo('memoria')">🧠 Memória</button>
+    <button onclick="iniciarJogo('tetris')">🔲 Tetris</button>
+    <br /><br />
+    <button id="btnVoltar">⬅️ Voltar</button>
   </div>
 
-  <canvas id="gameCanvas" width="400" height="400" style="display:none;"></canvas>
-  <canvas id="tetrisCanvas" width="200" height="400" style="display:none;"></canvas>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <canvas id="tetrisCanvas" width="200" height="400"></canvas>
 
-  <div id="memoriaContainer" style="display:none;">
-    <h3 id="faseAtual">Fase 1</h3>
+  <div id="memoriaContainer" style="display: none;">
+    <h2 id="faseAtual">Fase 1</h2>
+    <button id="btnIniciarMemoria">🔄 Reiniciar</button>
+    <button id="btnProximaFase" style="display:none;">➡️ Próxima Fase</button>
     <div id="memoriaGrid"></div>
-    <button id="btnIniciarMemoria">Iniciar Memória</button>
-    <button id="btnProximaFase" style="display:none;">Próxima Fase</button>
   </div>
 
-  <div id="mobileControls" style="display:none;" class="mobile-dpad">
-    <button class="arrow-btn" data-dir="UP">▲</button>
-    <div>
-      <button class="arrow-btn" data-dir="LEFT">◄</button>
-      <button class="arrow-btn" data-dir="DOWN">▼</button>
-      <button class="arrow-btn" data-dir="RIGHT">►</button>
-    </div>
+  <div id="mobileControls">
+    <button class="arrow-btn" data-dir="UP">⬆️</button>
+    <button class="arrow-btn" data-dir="LEFT">⬅️</button>
+    <button class="arrow-btn" data-dir="DOWN">⬇️</button>
+    <button class="arrow-btn" data-dir="RIGHT">➡️</button>
   </div>
 
   <script src="script.js"></script>
