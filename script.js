@@ -1,410 +1,545 @@
 // --------------------
-// CONFIG INICIAL
+// VARIÁVEIS GLOBAIS
 // --------------------
-let jogo = "";
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
+let jogo = null;
+const gameCanvas = document.getElementById("gameCanvas");
+const ctx = gameCanvas.getContext("2d");
 const tetrisCanvas = document.getElementById("tetrisCanvas");
 const tetrisCtx = tetrisCanvas.getContext("2d");
 
+// --------------------
+// TELA INICIAL E NAVEGAÇÃO
+// --------------------
 document.getElementById("btnEntrar").addEventListener("click", () => {
   document.getElementById("telaInicial").style.display = "none";
   document.getElementById("telaJogos").style.display = "block";
+  hideAllGames();
+  hideMobileControls();
 });
 
 document.getElementById("btnVoltar").addEventListener("click", () => {
-  resetDisplays();
   document.getElementById("telaJogos").style.display = "block";
+  hideAllGames();
+  document.getElementById("memoriaContainer").style.display = "none";
+  jogo = null;
+  hideMobileControls();
 });
 
-function resetDisplays() {
-  canvas.style.display = "none";
+function iniciarJogo(tipo) {
+  jogo = tipo;
+  document.getElementById("telaJogos").style.display = "none";
+  hideAllGames();
+  if (tipo === "snake") startSnake();
+  else if (tipo === "pong") startPong();
+  else if (tipo === "memoria") startMemoria();
+  else if (tipo === "tetris") startTetris();
+}
+
+// --------------------
+// AUXILIARES
+// --------------------
+function hideAllGames() {
+  gameCanvas.style.display = "none";
   tetrisCanvas.style.display = "none";
   document.getElementById("memoriaContainer").style.display = "none";
+}
+
+function showMobileControls() {
+  document.getElementById("mobileControls").style.display = "flex";
+}
+
+function hideMobileControls() {
   document.getElementById("mobileControls").style.display = "none";
-  clearInterval(snakeLoop);
-  clearInterval(pongLoopInt);
-  clearInterval(tetrisLoopInt);
-  document.removeEventListener("keydown", keydownHandler);
 }
 
-function iniciarJogo(nome) {
-  resetDisplays();
-  jogo = nome;
-
-  if (nome === "snake") startSnake();
-  if (nome === "pong") startPong();
-  if (nome === "memoria") startMemoria();
-  if (nome === "tetris") startTetris();
+// Detecta se é celular pelo userAgent simplificado
+function isMobile() {
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
 }
 
 // --------------------
-// SNAKE (COBRINHA)
+// JOGO SNAKE
 // --------------------
-let snake = [{ x: 10, y: 10 }];
-let apple = { x: 5, y: 5 };
-let dx = 0;
-let dy = 0;
-let gridSize = 20;
-let snakeLength = 1;
+let snake = [];
+let food = {};
+let dx = 0, dy = 0;
 let snakeLoop;
-let pontos = 0;
-let gameOverSnake = false;
+let snakeScore = 0;
 
 function startSnake() {
-  canvas.style.display = "block";
-  document.getElementById("mobileControls").style.display = "block";
-  ctx.clearRect(0, 0, 400, 400);
-  snake = [{ x: 10, y: 10 }];
-  apple = { x: 5, y: 5 };
-  dx = dy = 0;
-  snakeLength = 1;
-  pontos = 0;
-  gameOverSnake = false;
-  document.addEventListener("keydown", keydownHandler);
+  gameCanvas.style.display = "block";
+  showMobileControls();
+  snake = [{x: 10, y: 10}];
+  dx = 1; dy = 0;
+  food = randomPosition();
+  snakeScore = 0;
   clearInterval(snakeLoop);
-  snakeLoop = setInterval(updateSnake, 150);
+  snakeLoop = setInterval(updateSnake, 200);
+}
+
+function randomPosition() {
+  return { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) };
 }
 
 function updateSnake() {
-  if (gameOverSnake) return;
-
   const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-  snake.unshift(head);
-  if (head.x === apple.x && head.y === apple.y) {
-    apple.x = Math.floor(Math.random() * 20);
-    apple.y = Math.floor(Math.random() * 20);
-    snakeLength++;
-    pontos++;
-  } else {
-    while (snake.length > snakeLength) snake.pop();
-  }
 
-  if (
-    head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 ||
-    snake.slice(1).some(s => s.x === head.x && s.y === head.y)
-  ) {
-    gameOverSnake = true;
-    ctx.fillStyle = "red";
-    ctx.font = "30px Arial";
-    ctx.fillText("Game Over!", 110, 200);
+  // Colisão com paredes ou corpo
+  if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || snake.some(s => s.x === head.x && s.y === head.y)) {
+    clearInterval(snakeLoop);
+    alert("Game Over! Pontuação: " + snakeScore);
+    startSnake();
     return;
   }
 
-  ctx.fillStyle = "#111";
-  ctx.fillRect(0, 0, 400, 400);
+  snake.unshift(head);
+  if (head.x === food.x && head.y === food.y) {
+    snakeScore++;
+    food = randomPosition();
+  } else {
+    snake.pop();
+  }
 
-  ctx.fillStyle = "limegreen";
-  snake.forEach(s => ctx.fillRect(s.x * gridSize, s.y * gridSize, gridSize - 2, gridSize - 2));
+  // Desenhar fundo com textura quadriculada
+  for (let i = 0; i < 20; i++) {
+    for (let j = 0; j < 20; j++) {
+      ctx.fillStyle = (i + j) % 2 === 0 ? "#2c3e50" : "#34495e";
+      ctx.fillRect(i * 20, j * 20, 20, 20);
+    }
+  }
 
+  // Desenhar comida
   ctx.fillStyle = "red";
-  ctx.fillRect(apple.x * gridSize, apple.y * gridSize, gridSize - 2, gridSize - 2);
+  ctx.beginPath();
+  ctx.arc(food.x * 20 + 10, food.y * 20 + 10, 8, 0, 2 * Math.PI);
+  ctx.fill();
 
+  // Desenhar cobra com textura verde
+  ctx.fillStyle = "#0f0";
+  snake.forEach(part => ctx.fillRect(part.x * 20, part.y * 20, 20, 20));
+
+  // Pontuação
   ctx.fillStyle = "white";
   ctx.font = "16px Arial";
-  ctx.fillText("Pontos: " + pontos, 10, 390);
+  ctx.fillText("Pontos: " + snakeScore, 10, 20);
 }
-let pongBallX = 200, pongBallY = 200;
-let pongBallVX = 3, pongBallVY = 3;
-let pongPlayerY = 170, pongAIY = 170;
-let pongPlayerScore = 0, pongAIScore = 0;
-let pongLoopInt;
+
+// Controles teclado
+window.addEventListener("keydown", e => {
+  if (jogo !== "snake") return;
+  if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -1; }
+  else if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = 1; }
+  else if (e.key === "ArrowLeft" && dx === 0) { dx = -1; dy = 0; }
+  else if (e.key === "ArrowRight" && dx === 0) { dx = 1; dy = 0; }
+});
+
+// Controles mobile
+document.querySelectorAll("#mobileControls .arrow-btn").forEach(btn => {
+  btn.addEventListener("touchstart", e => {
+    if (jogo !== "snake") return;
+    const dir = btn.getAttribute("data-dir");
+    if (dir === "UP" && dy === 0) { dx = 0; dy = -1; }
+    else if (dir === "DOWN" && dy === 0) { dx = 0; dy = 1; }
+    else if (dir === "LEFT" && dx === 0) { dx = -1; dy = 0; }
+    else if (dir === "RIGHT" && dx === 0) { dx = 1; dy = 0; }
+  });
+});
+
+// --------------------
+// JOGO PONG COM IA 60% DE ACERTO
+// --------------------
+let pongLoop;
+let pongBall = { x: 200, y: 200, vx: 4, vy: 4, radius: 10 };
+let pongPlayer = { x: 10, y: 175, width: 10, height: 50, dy: 0 };
+let pongAI = { x: 380, y: 175, width: 10, height: 50, dy: 0 };
+let pongScore = { player: 0, ai: 0 };
+const pongSpeed = 4;
 
 function startPong() {
-  canvas.style.display = "block";
-  document.getElementById("mobileControls").style.display = "block";
-  pongBallX = 200; pongBallY = 200;
-  pongPlayerY = 170; pongAIY = 170;
-  pongPlayerScore = 0; pongAIScore = 0;
-  document.addEventListener("keydown", keydownHandler);
-  clearInterval(pongLoopInt);
-  pongLoopInt = setInterval(updatePong, 30);
+  gameCanvas.style.display = "block";
+  showMobileControls();
+  pongBall = { x: 200, y: 200, vx: 4, vy: 4, radius: 10 };
+  pongPlayer = { x: 10, y: 175, width: 10, height: 50, dy: 0 };
+  pongAI = { x: 380, y: 175, width: 10, height: 50, dy: 0 };
+  pongScore = { player: 0, ai: 0 };
+  clearInterval(pongLoop);
+  pongLoop = setInterval(updatePong, 20);
+}
+
+// AI com chance de acerto 60%
+function aiMove() {
+  let chance = Math.random();
+  if (chance <= 0.6) { // 60% chance de seguir bola
+    if (pongBall.y > pongAI.y + pongAI.height / 2) pongAI.dy = pongSpeed * 0.6;
+    else if (pongBall.y < pongAI.y + pongAI.height / 2) pongAI.dy = -pongSpeed * 0.6;
+    else pongAI.dy = 0;
+  } else {
+    pongAI.dy = 0; // 40% chance não se move
+  }
+  pongAI.y += pongAI.dy;
+  if (pongAI.y < 0) pongAI.y = 0;
+  if (pongAI.y + pongAI.height > 400) pongAI.y = 400 - pongAI.height;
 }
 
 function updatePong() {
-  ctx.fillStyle = "#111";
+  pongBall.x += pongBall.vx;
+  pongBall.y += pongBall.vy;
+
+  if (pongBall.y + pongBall.radius > 400 || pongBall.y - pongBall.radius < 0) {
+    pongBall.vy = -pongBall.vy;
+  }
+
+  if (
+    pongBall.x - pongBall.radius < pongPlayer.x + pongPlayer.width &&
+    pongBall.y > pongPlayer.y &&
+    pongBall.y < pongPlayer.y + pongPlayer.height
+  ) {
+    pongBall.vx = -pongBall.vx;
+  }
+
+  if (
+    pongBall.x + pongBall.radius > pongAI.x &&
+    pongBall.y > pongAI.y &&
+    pongBall.y < pongAI.y + pongAI.height
+  ) {
+    pongBall.vx = -pongBall.vx;
+  }
+
+  if (pongBall.x - pongBall.radius < 0) {
+    pongScore.ai++;
+    resetPongBall();
+  } else if (pongBall.x + pongBall.radius > 400) {
+    pongScore.player++;
+    resetPongBall();
+  }
+
+  pongPlayer.y += pongPlayer.dy;
+  if (pongPlayer.y < 0) pongPlayer.y = 0;
+  if (pongPlayer.y + pongPlayer.height > 400) pongPlayer.y = 400 - pongPlayer.height;
+
+  aiMove();
+
+  ctx.fillStyle = "#222";
   ctx.fillRect(0, 0, 400, 400);
 
-  pongBallX += pongBallVX;
-  pongBallY += pongBallVY;
-
-  if (pongBallY <= 0 || pongBallY >= 400) pongBallVY *= -1;
-
   ctx.fillStyle = "white";
-  ctx.fillRect(10, pongPlayerY, 10, 60);
-  ctx.fillRect(380, pongAIY, 10, 60);
   ctx.beginPath();
-  ctx.arc(pongBallX, pongBallY, 8, 0, Math.PI * 2);
+  ctx.arc(pongBall.x, pongBall.y, pongBall.radius, 0, 2 * Math.PI);
   ctx.fill();
 
-  if (pongBallX <= 20 && pongBallY >= pongPlayerY && pongBallY <= pongPlayerY + 60) {
-    pongBallVX *= -1;
-    pongBallX = 20;
-  }
+  ctx.fillStyle = "#3498db";
+  ctx.fillRect(pongPlayer.x, pongPlayer.y, pongPlayer.width, pongPlayer.height);
+  ctx.fillStyle = "#e67e22";
+  ctx.fillRect(pongAI.x, pongAI.y, pongAI.width, pongAI.height);
 
-  if (pongBallX >= 370 && pongBallY >= pongAIY && pongBallY <= pongAIY + 60) {
-    pongBallVX *= -1;
-    pongBallX = 370;
-  }
-
-  let chance = Math.random();
-  if (chance < 0.6) {
-    if (pongBallY > pongAIY + 30) pongAIY += 3;
-    else if (pongBallY < pongAIY + 30) pongAIY -= 3;
-  }
-
-  pongAIY = Math.max(0, Math.min(340, pongAIY));
-  pongPlayerY = Math.max(0, Math.min(340, pongPlayerY));
-
-  if (pongBallX < 0) {
-    pongAIScore++;
-    resetBall();
-  }
-  if (pongBallX > 400) {
-    pongPlayerScore++;
-    resetBall();
-  }
-
+  ctx.fillStyle = "white";
   ctx.font = "20px Arial";
-  ctx.fillText("Você: " + pongPlayerScore, 20, 30);
-  ctx.fillText("CPU: " + pongAIScore, 300, 30);
+  ctx.fillText(`Jogador: ${pongScore.player}`, 10, 20);
+  ctx.fillText(`IA: ${pongScore.ai}`, 300, 20);
 }
 
-function resetBall() {
-  pongBallX = 200;
-  pongBallY = 200;
-  pongBallVX = Math.random() > 0.5 ? 3 : -3;
-  pongBallVY = Math.random() > 0.5 ? 3 : -3;
+function resetPongBall() {
+  pongBall.x = 200;
+  pongBall.y = 200;
+  pongBall.vx = -pongBall.vx;
+  pongBall.vy = 4 * (Math.random() > 0.5 ? 1 : -1);
 }
+
+window.addEventListener("keydown", e => {
+  if (jogo !== "pong") return;
+  if (e.key === "ArrowUp") pongPlayer.dy = -pongSpeed;
+  else if (e.key === "ArrowDown") pongPlayer.dy = pongSpeed;
+});
+
+window.addEventListener("keyup", e => {
+  if (jogo !== "pong") return;
+  if (e.key === "ArrowUp" || e.key === "ArrowDown") pongPlayer.dy = 0;
+});
+
+document.querySelectorAll("#mobileControls .arrow-btn").forEach(btn => {
+  btn.addEventListener("touchstart", e => {
+    if (jogo !== "pong") return;
+    const dir = btn.getAttribute("data-dir");
+    if (dir === "UP") pongPlayer.dy = -pongSpeed;
+    else if (dir === "DOWN") pongPlayer.dy = pongSpeed;
+  });
+  btn.addEventListener("touchend", e => {
+    if (jogo !== "pong") return;
+    pongPlayer.dy = 0;
+  });
+});
+
 // --------------------
-// JOGO DA MEMÓRIA
+// JOGO DA MEMÓRIA COM FASES E IMAGENS
 // --------------------
-let memoriaNivel = 1;
+const memoriaGrid = document.getElementById("memoriaGrid");
+const btnIniciarMemoria = document.getElementById("btnIniciarMemoria");
+const btnProximaFase = document.getElementById("btnProximaFase");
+const faseAtualTexto = document.getElementById("faseAtual");
+
+let memoriaFase = 1;
 let cartas = [];
-let reveladas = [];
-let acertos = 0;
+let cartasReveladas = [];
+let paresEncontrados = 0;
+
+const imagensMemoria = [
+  "https://i.imgur.com/7v9jI5h.png", // maçã
+  "https://i.imgur.com/NPz5XzT.png", // banana
+  "https://i.imgur.com/EtbYTgM.png", // cereja
+  "https://i.imgur.com/YChNOOe.png", // uva
+  "https://i.imgur.com/5EmRyqE.png", // morango
+  "https://i.imgur.com/EsH54yX.png", // limão
+  "https://i.imgur.com/vjCPvPz.png", // laranja
+  "https://i.imgur.com/YPhSg8p.png"  // kiwi
+];
 
 function startMemoria() {
   document.getElementById("memoriaContainer").style.display = "block";
-  document.getElementById("faseAtual").textContent = `Fase ${memoriaNivel}`;
-  criarCartas(memoriaNivel);
-  document.getElementById("btnIniciarMemoria").style.display = "inline-block";
-  document.getElementById("btnProximaFase").style.display = "none";
+  memoriaFase = 1;
+  btnProximaFase.style.display = "none";
+  faseAtualTexto.textContent = `Fase ${memoriaFase}`;
+  montarTabuleiro();
 }
 
-function criarCartas(nivel) {
-  const grid = document.getElementById("memoriaGrid");
-  grid.innerHTML = "";
-  const totalPares = 3 + nivel;
-  const simbolos = "🍎🍌🍓🍇🍒🍍🍑🥝🥥🍉".split("").slice(0, totalPares);
-  cartas = embaralhar([...simbolos, ...simbolos]);
-  acertos = 0;
-  reveladas = [];
+function montarTabuleiro() {
+  memoriaGrid.innerHTML = "";
+  cartasReveladas = [];
+  paresEncontrados = 0;
 
-  cartas.forEach((simbolo, index) => {
+  let qtdPares = Math.min(memoriaFase + 1, imagensMemoria.length);
+  let selecionadas = imagensMemoria.slice(0, qtdPares);
+
+  cartas = [...selecionadas, ...selecionadas];
+  cartas.sort(() => 0.5 - Math.random());
+
+  memoriaGrid.style.gridTemplateColumns = `repeat(${qtdPares}, 70px)`;
+
+  cartas.forEach((img, index) => {
     const div = document.createElement("div");
-    div.className = "carta";
+    div.classList.add("carta");
     div.dataset.index = index;
-    div.addEventListener("click", () => revelarCarta(index, div));
-    grid.appendChild(div);
+    div.innerHTML = `<img src="https://i.imgur.com/8n7vFhM.png" alt="carta" width="60" height="60">`; // verso da carta
+    div.addEventListener("click", () => revelarCarta(div));
+    memoriaGrid.appendChild(div);
   });
 }
 
-function revelarCarta(index, div) {
-  if (reveladas.length >= 2 || div.classList.contains("revelada")) return;
-  div.textContent = cartas[index];
+function revelarCarta(div) {
+  if (cartasReveladas.length >= 2 || div.classList.contains("revelada")) return;
+  const idx = parseInt(div.dataset.index);
+  div.innerHTML = `<img src="${cartas[idx]}" alt="img" width="60" height="60">`;
   div.classList.add("revelada");
-  reveladas.push({ index, simbolo: cartas[index], div });
+  cartasReveladas.push(div);
 
-  if (reveladas.length === 2) {
-    const [a, b] = reveladas;
-    if (a.simbolo === b.simbolo) {
-      acertos++;
-      reveladas = [];
-      if (acertos === cartas.length / 2) {
-        document.getElementById("btnProximaFase").style.display = "inline-block";
+  if (cartasReveladas.length === 2) {
+    const i1 = parseInt(cartasReveladas[0].dataset.index);
+    const i2 = parseInt(cartasReveladas[1].dataset.index);
+    if (cartas[i1] === cartas[i2]) {
+      paresEncontrados++;
+      cartasReveladas = [];
+      if (paresEncontrados === cartas.length / 2) {
+        btnProximaFase.style.display = "inline-block";
       }
     } else {
       setTimeout(() => {
-        a.div.textContent = "";
-        b.div.textContent = "";
-        a.div.classList.remove("revelada");
-        b.div.classList.remove("revelada");
-        reveladas = [];
-      }, 800);
+        cartasReveladas.forEach(c => {
+          c.classList.remove("revelada");
+          c.innerHTML = `<img src="https://i.imgur.com/8n7vFhM.png" alt="carta" width="60" height="60">`;
+        });
+        cartasReveladas = [];
+      }, 1000);
     }
   }
 }
 
-document.getElementById("btnIniciarMemoria").addEventListener("click", () => {
-  criarCartas(memoriaNivel);
-});
+btnIniciarMemoria.onclick = () => {
+  montarTabuleiro();
+  btnProximaFase.style.display = "none";
+};
 
-document.getElementById("btnProximaFase").addEventListener("click", () => {
-  memoriaNivel++;
-  startMemoria();
-});
+btnProximaFase.onclick = () => {
+  memoriaFase++;
+  faseAtualTexto.textContent = `Fase ${memoriaFase}`;
+  montarTabuleiro();
+  btnProximaFase.style.display = "none";
+};
 
-function embaralhar(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
 // --------------------
-// TETRIS
+// JOGO TETRIS COLORIDO SIMPLES
 // --------------------
-let tetrisGrid = Array.from({ length: 20 }, () => Array(10).fill(0));
-let tetrisPiece;
-let tetrisLoopInt;
+const ROWS = 20;
+const COLS = 10;
+const BLOCK_SIZE = 20;
+
+tetrisCanvas.width = COLS * BLOCK_SIZE;
+tetrisCanvas.height = ROWS * BLOCK_SIZE;
+
+const COLORS = [
+  null,
+  "#00f0f0", // cyan
+  "#0000f0", // blue
+  "#f0a000", // orange
+  "#f0f000", // yellow
+  "#00f000", // green
+  "#a000f0", // purple
+  "#f00000"  // red
+];
+
+const SHAPES = [
+  [],
+  [[1,1,1,1]],              // I
+  [[2,0,0],[2,2,2]],        // J
+  [[0,0,3],[3,3,3]],        // L
+  [[4,4],[4,4]],            // O
+  [[0,5,5],[5,5,0]],        // S
+  [[0,6,0],[6,6,6]],        // T
+  [[7,7,0],[0,7,7]]         // Z
+];
+
+let tetrisGrid = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+let currentPiece = null;
+let currentX = 0;
+let currentY = 0;
+let tetrisLoop;
+let tetrisSpeed = 600;
 
 function startTetris() {
   tetrisCanvas.style.display = "block";
-  tetrisGrid = Array.from({ length: 20 }, () => Array(10).fill(0));
-  novaPeca();
-  document.addEventListener("keydown", keydownHandler);
-  clearInterval(tetrisLoopInt);
-  tetrisLoopInt = setInterval(updateTetris, 400);
+  showMobileControls();
+  tetrisGrid = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+  spawnPiece();
+  clearInterval(tetrisLoop);
+  tetrisLoop = setInterval(tetrisUpdate, tetrisSpeed);
 }
 
-function novaPeca() {
-  const pecas = [
-    [[1, 1, 1, 1]],
-    [[1, 1], [1, 1]],
-    [[0, 1, 0], [1, 1, 1]],
-    [[1, 0, 0], [1, 1, 1]],
-    [[0, 0, 1], [1, 1, 1]]
-  ];
-  const cor = Math.floor(Math.random() * 5) + 1;
-  tetrisPiece = {
-    shape: pecas[cor - 1],
-    x: 3,
-    y: 0,
-    color: cor
-  };
+function spawnPiece() {
+  const id = Math.floor(Math.random() * (SHAPES.length - 1)) + 1;
+  currentPiece = SHAPES[id];
+  currentX = Math.floor(COLS / 2) - Math.floor(currentPiece[0].length / 2);
+  currentY = 0;
 }
 
-function updateTetris() {
-  if (!moveTetris(0, 1)) {
-    fixarPeca();
-    limparLinhas();
-    novaPeca();
-    if (!validaPosicao(tetrisPiece.shape, tetrisPiece.x, tetrisPiece.y)) {
-      clearInterval(tetrisLoopInt);
+function tetrisUpdate() {
+  if (!movePiece(0, 1)) {
+    placePiece();
+    clearLines();
+    spawnPiece();
+    if (collision(currentX, currentY, currentPiece)) {
+      clearInterval(tetrisLoop);
+      alert("Fim de jogo!");
+      hideMobileControls();
     }
   }
-  desenharTetris();
+  drawTetris();
 }
 
-function moveTetris(dx, dy) {
-  if (validaPosicao(tetrisPiece.shape, tetrisPiece.x + dx, tetrisPiece.y + dy)) {
-    tetrisPiece.x += dx;
-    tetrisPiece.y += dy;
+function collision(x, y, piece) {
+  for (let r = 0; r < piece.length; r++) {
+    for (let c = 0; c < piece[r].length; c++) {
+      if (piece[r][c]) {
+        let nx = x + c;
+        let ny = y + r;
+        if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+        if (ny >= 0 && tetrisGrid[ny][nx]) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function movePiece(dx, dy) {
+  if (!collision(currentX + dx, currentY + dy, currentPiece)) {
+    currentX += dx;
+    currentY += dy;
     return true;
   }
   return false;
 }
 
-function validaPosicao(shape, x, y) {
-  for (let i = 0; i < shape.length; i++) {
-    for (let j = 0; j < shape[i].length; j++) {
-      if (shape[i][j]) {
-        const px = x + j;
-        const py = y + i;
-        if (px < 0 || px >= 10 || py >= 20 || tetrisGrid[py][px]) return false;
-      }
-    }
-  }
-  return true;
-}
-
-function fixarPeca() {
-  const { shape, x, y, color } = tetrisPiece;
-  for (let i = 0; i < shape.length; i++) {
-    for (let j = 0; j < shape[i].length; j++) {
-      if (shape[i][j]) {
-        tetrisGrid[y + i][x + j] = color;
+function placePiece() {
+  for (let r = 0; r < currentPiece.length; r++) {
+    for (let c = 0; c < currentPiece[r].length; c++) {
+      if (currentPiece[r][c]) {
+        let nx = currentX + c;
+        let ny = currentY + r;
+        if(ny >= 0) tetrisGrid[ny][nx] = currentPiece[r][c];
       }
     }
   }
 }
 
-function limparLinhas() {
-  for (let y = tetrisGrid.length - 1; y >= 0; y--) {
-    if (tetrisGrid[y].every(val => val)) {
-      tetrisGrid.splice(y, 1);
-      tetrisGrid.unshift(Array(10).fill(0));
-      y++;
+function clearLines() {
+  for(let r = ROWS -1; r >= 0; r--) {
+    if(tetrisGrid[r].every(c => c !== 0)) {
+      tetrisGrid.splice(r,1);
+      tetrisGrid.unshift(new Array(COLS).fill(0));
+      r++;
     }
   }
 }
 
-function desenharTetris() {
-  const colors = ["#000", "#f00", "#0f0", "#00f", "#ff0", "#f0f"];
-  tetrisCtx.fillStyle = "#000";
-  tetrisCtx.fillRect(0, 0, 200, 400);
-  for (let y = 0; y < 20; y++) {
-    for (let x = 0; x < 10; x++) {
-      if (tetrisGrid[y][x]) {
-        tetrisCtx.fillStyle = colors[tetrisGrid[y][x]];
-        tetrisCtx.fillRect(x * 20, y * 20, 18, 18);
+function drawTetris() {
+  tetrisCtx.fillStyle = "#222";
+  tetrisCtx.fillRect(0,0,tetrisCanvas.width,tetrisCanvas.height);
+
+  for(let r = 0; r < ROWS; r++) {
+    for(let c = 0; c < COLS; c++) {
+      const val = tetrisGrid[r][c];
+      if(val) {
+        tetrisCtx.fillStyle = COLORS[val];
+        tetrisCtx.fillRect(c*BLOCK_SIZE,r*BLOCK_SIZE,BLOCK_SIZE,BLOCK_SIZE);
+        tetrisCtx.strokeStyle = "#111";
+        tetrisCtx.strokeRect(c*BLOCK_SIZE,r*BLOCK_SIZE,BLOCK_SIZE,BLOCK_SIZE);
       }
     }
   }
-  const { shape, x, y, color } = tetrisPiece;
-  tetrisCtx.fillStyle = colors[color];
-  shape.forEach((row, i) =>
-    row.forEach((cell, j) => {
-      if (cell) {
-        tetrisCtx.fillRect((x + j) * 20, (y + i) * 20, 18, 18);
+
+  // desenha peça atual
+  for(let r = 0; r < currentPiece.length; r++) {
+    for(let c = 0; c < currentPiece[r].length; c++) {
+      if(currentPiece[r][c]) {
+        let x = (currentX + c)*BLOCK_SIZE;
+        let y = (currentY + r)*BLOCK_SIZE;
+        tetrisCtx.fillStyle = COLORS[currentPiece[r][c]];
+        tetrisCtx.fillRect(x,y,BLOCK_SIZE,BLOCK_SIZE);
+        tetrisCtx.strokeStyle = "#111";
+        tetrisCtx.strokeRect(x,y,BLOCK_SIZE,BLOCK_SIZE);
       }
-    })
-  );
-}
-// --------------------
-// CONTROLES
-// --------------------
-function keydownHandler(e) {
-  if (jogo === "snake") {
-    if (e.key === "ArrowUp") dx = 0, dy = -1;
-    if (e.key === "ArrowDown") dx = 0, dy = 1;
-    if (e.key === "ArrowLeft") dx = -1, dy = 0;
-    if (e.key === "ArrowRight") dx = 1, dy = 0;
-  }
-
-  if (jogo === "pong") {
-    if (e.key === "ArrowUp") pongPlayerY -= 20;
-    if (e.key === "ArrowDown") pongPlayerY += 20;
-  }
-
-  if (jogo === "tetris") {
-    if (e.key === "ArrowLeft") moveTetris(-1, 0);
-    if (e.key === "ArrowRight") moveTetris(1, 0);
-    if (e.key === "ArrowDown") moveTetris(0, 1);
+    }
   }
 }
 
-document.querySelectorAll(".arrow-btn").forEach(btn => {
-  btn.addEventListener("touchstart", () => {
-    const dir = btn.dataset.dir;
-    if (jogo === "snake") {
-      if (dir === "UP") dx = 0, dy = -1;
-      if (dir === "DOWN") dx = 0, dy = 1;
-      if (dir === "LEFT") dx = -1, dy = 0;
-      if (dir === "RIGHT") dx = 1, dy = 0;
-    }
+// Controles teclado tetris
+window.addEventListener("keydown", e => {
+  if(jogo !== "tetris") return;
+  if(e.key === "ArrowLeft") movePiece(-1,0);
+  else if(e.key === "ArrowRight") movePiece(1,0);
+  else if(e.key === "ArrowDown") movePiece(0,1);
+  else if(e.key === "ArrowUp") rotatePiece();
+});
 
-    if (jogo === "pong") {
-      if (dir === "UP") pongPlayerY -= 20;
-      if (dir === "DOWN") pongPlayerY += 20;
+function rotatePiece() {
+  let rotated = [];
+  for(let c = 0; c < currentPiece[0].length; c++) {
+    let newRow = [];
+    for(let r = currentPiece.length -1; r >= 0; r--) {
+      newRow.push(currentPiece[r][c]);
     }
+    rotated.push(newRow);
+  }
+  if(!collision(currentX, currentY, rotated)) {
+    currentPiece = rotated;
+  }
+}
 
-    if (jogo === "tetris") {
-      if (dir === "LEFT") moveTetris(-1, 0);
-      if (dir === "RIGHT") moveTetris(1, 0);
-      if (dir === "DOWN") moveTetris(0, 1);
-    }
+// Controles mobile para tetris
+document.querySelectorAll("#mobileControls .arrow-btn").forEach(btn => {
+  btn.addEventListener("touchstart", e => {
+    if(jogo !== "tetris") return;
+    const dir = btn.getAttribute("data-dir");
+    if(dir === "LEFT") movePiece(-1,0);
+    else if(dir === "RIGHT") movePiece(1,0);
+    else if(dir === "DOWN") movePiece(0,1);
+    else if(dir === "UP") rotatePiece();
   });
 });
