@@ -64,7 +64,6 @@ function setupArrowButtons(callback) {
     });
   });
 }
-
 // === JOGO DA COBRINHA ===
 function startSnake() {
   document.getElementById("controlesSnake").style.display = "none";
@@ -140,8 +139,6 @@ function drawSnake() {
   ctx.font = "16px Arial";
   ctx.fillText("Pontuação: " + score, 10, 390);
 }
-
-// === JOGO DO PONG ===
 let pongPlayerY = 150;
 let pongAIY = 150;
 let pongBallX = 200, pongBallY = 200;
@@ -171,7 +168,7 @@ function drawPong() {
 
   ctx.fillStyle = "white";
   ctx.fillRect(10, pongPlayerY, 10, 80); // jogador
-  ctx.fillRect(380, pongAIY, 10, 80); // computador
+  ctx.fillRect(380, pongAIY, 10, 80); // IA
   ctx.beginPath();
   ctx.arc(pongBallX, pongBallY, 10, 0, Math.PI * 2);
   ctx.fill();
@@ -182,8 +179,8 @@ function drawPong() {
   if (pongBallY < 0 || pongBallY > 400) pongBallVY *= -1;
 
   if (
-    pongBallX < 20 && pongBallY > pongPlayerY && pongBallY < pongPlayerY + 80 ||
-    pongBallX > 370 && pongBallY > pongAIY && pongBallY < pongAIY + 80
+    (pongBallX < 20 && pongBallY > pongPlayerY && pongBallY < pongPlayerY + 80) ||
+    (pongBallX > 370 && pongBallY > pongAIY && pongBallY < pongAIY + 80)
   ) pongBallVX *= -1;
 
   if (pongBallX < 0) {
@@ -195,8 +192,15 @@ function drawPong() {
     resetBall();
   }
 
-  if (pongBallY > pongAIY + 40) pongAIY += 2;
-  else pongAIY -= 2;
+  // IA com 60% de chance de acerto
+  if (pongBallVX > 0) {
+    if (Math.random() < 0.6) {
+      if (pongBallY > pongAIY + 40) pongAIY += 3;
+      else if (pongBallY < pongAIY + 40) pongAIY -= 3;
+    } else {
+      pongAIY += Math.random() > 0.5 ? 3 : -3;
+    }
+  }
 
   ctx.font = "16px Arial";
   ctx.fillText("Você: " + pongPlayerScore, 20, 20);
@@ -209,8 +213,6 @@ function resetBall() {
   pongBallVX = Math.random() > 0.5 ? 3 : -3;
   pongBallVY = Math.random() > 0.5 ? 3 : -3;
 }
-
-// === JOGO DA MEMÓRIA ===
 let emojis = ["🍎", "🍌", "🍇", "🍒", "🍉", "🍍", "🥝", "🍑"];
 let cartas = [], cartasSelecionadas = [];
 let fase = 1;
@@ -230,6 +232,7 @@ function iniciarFaseMemoria() {
   cartas = [];
   cartasSelecionadas = [];
   document.getElementById("btnProximaFase").style.display = "none";
+  document.getElementById("memoriaFase").innerText = "Fase: " + fase;
 
   let totalPares = Math.min(fase + 2, emojis.length);
   let selecionados = emojis.slice(0, totalPares);
@@ -276,3 +279,28 @@ function revelarCarta(carta) {
     }
   }
 }
+
+// === CONTROLE POR TECLADO (PC) ===
+document.addEventListener("keydown", function (e) {
+  const tecla = e.key;
+
+  // Jogo da cobrinha
+  if (canvas && canvas.style.display === "block" && gameLoop && typeof swipeSnake === "function") {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(tecla)) {
+      e.preventDefault();
+      if (tecla === "ArrowLeft" && d !== "RIGHT") d = "LEFT";
+      else if (tecla === "ArrowUp" && d !== "DOWN") d = "UP";
+      else if (tecla === "ArrowRight" && d !== "LEFT") d = "RIGHT";
+      else if (tecla === "ArrowDown" && d !== "UP") d = "DOWN";
+    }
+  }
+
+  // Jogo Pong
+  if (canvas && canvas.style.display === "block" && gameLoop && typeof pongSwipeHandler === "function") {
+    if (tecla === "ArrowUp") {
+      pongSwipeHandler("UP");
+    } else if (tecla === "ArrowDown") {
+      pongSwipeHandler("DOWN");
+    }
+  }
+});
