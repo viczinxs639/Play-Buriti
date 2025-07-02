@@ -81,63 +81,26 @@ canvas {
   background: #000;
 }
 
-#memoriaContainer {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.memoria-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 70px);
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 15px;
-}
-
-.carta {
-  width: 70px;
-  height: 70px;
-  border-radius: 8px;
-  background: #fff;
-  color: #000;
-  font-size: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 5px #2980b9;
-  cursor: pointer;
-  border: 2px solid #ccc;
-  transition: background 0.3s ease;
-}
-
-.carta.virada {
-  background: #ffeaa7;
-  border-color: #f39c12;
-}
-
+/* Controles móveis para Tetris */
 .mobile-controls {
-  position: fixed;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 15px;
   display: flex;
-  gap: 15px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 10px 20px;
-  border-radius: 30px;
+  justify-content: center;
+  gap: 10px;
 }
 
 .arrow-btn {
   background: #f39c12;
   border: none;
   color: #222;
-  font-size: 30px;
-  width: 60px;
-  height: 60px;
+  font-size: 28px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 3px 6px #d35400;
   transition: background 0.3s ease;
+  user-select: none;
 }
 
 .arrow-btn:active {
@@ -156,13 +119,14 @@ canvas {
     gap: 10px;
   }
 
-  .memoria-grid {
-    grid-template-columns: repeat(3, 70px);
+  .arrow-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
   }
 
-  .arrow-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
+  canvas {
+    width: 100%;
+    height: auto;
   }
 }
