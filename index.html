@@ -7,13 +7,13 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="telaInicial">
+  <div id="telaInicial" class="tela-inicial">
     <h1>🎮 Play Buriti</h1>
-    <p>Bem-vindo ao seu portal de jogos!</p>
-    <button onclick="mostrarGaleria()">Entrar nos jogos</button>
+    <p>Seu portal de jogos favorito!</p>
+    <button id="btnEntrar" class="btn-entrar">Entrar nos jogos</button>
   </div>
 
-  <div id="galeriaJogos" style="display:none">
+  <div id="galeriaJogos" class="galeria-jogos" style="display:none">
     <h2>Escolha um jogo:</h2>
     <button onclick="iniciarJogo('snake')">🐍 Snake</button>
     <button onclick="iniciarJogo('pong')">🏓 Pong</button>
@@ -40,16 +40,23 @@
     </div>
   </div>
 
-  <div id="controlesSnake" style="display:none">
+  <div id="controlesSnake" style="display:none; margin-top: 15px;">
     <button onclick="startSnake()">▶️ Iniciar Snake</button>
   </div>
-  <div id="controlesPong" style="display:none">
+  <div id="controlesPong" style="display:none; margin-top: 15px;">
     <button onclick="startPong()">▶️ Iniciar Pong</button>
   </div>
-  <div id="controlesTetris" style="display:none; margin-top:10px;">
+  <div id="controlesTetris" style="display:none; margin-top: 15px;">
     <button onclick="startTetris()">▶️ Iniciar Tetris</button>
   </div>
 
   <script src="script.js"></script>
+
+  <script>
+    document.getElementById("btnEntrar").addEventListener("click", () => {
+      document.getElementById("telaInicial").style.display = "none";
+      document.getElementById("galeriaJogos").style.display = "block";
+    });
+  </script>
 </body>
 </html>
