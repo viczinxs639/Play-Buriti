@@ -81,12 +81,41 @@ canvas {
   background: #000;
 }
 
-/* Controles móveis para Tetris */
+/* Memória */
+.memoria-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 80px);
+  gap: 15px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.memoria-card {
+  width: 80px;
+  height: 80px;
+  background-color: #34495e;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 36px;
+  color: white;
+  user-select: none;
+}
+
+.memoria-card.flipped {
+  background-color: #f39c12;
+  color: #222;
+  cursor: default;
+}
+
 .mobile-controls {
   margin-top: 15px;
   display: flex;
   justify-content: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .arrow-btn {
