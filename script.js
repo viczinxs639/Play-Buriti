@@ -29,7 +29,7 @@ function isMobile() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-// Evento botão Entrar (fixado aqui para garantir que funcione)
+// Evento botão Entrar (garante que funciona)
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btnEntrar").addEventListener("click", () => {
     document.getElementById("telaInicial").style.display = "none";
@@ -263,21 +263,27 @@ function drawPong() {
 
   if (pongBallY <= 0 || pongBallY >= 400) pongBallVY = -pongBallVY;
 
-  // Colisão com raquetes
-  if (pongBallX <= 20 && pongBallY > pongPlayerY && pongBallY < pongPlayerY + 60) pongBallVX = -pongBallVX;
-  if (pongBallX >= 380 && pongBallY > pongAIY && pongBallY < pongAIY + 60) pongBallVX = -pongBallVX;
-
-  // IA com 60% de chance de acertar
-  if (Math.random() < 0.6) {
-    if (pongAIY + 30 < pongBallY) pongAIY += 2;
-    else pongAIY -= 2;
+  // Colisão com player
+  if (pongBallX <= 20 && pongBallY >= pongPlayerY && pongBallY <= pongPlayerY + 60) {
+    pongBallVX = -pongBallVX;
+    pongBallX = 20;
+  }
+  // Colisão com AI
+  if (pongBallX >= 380 && pongBallY >= pongAIY && pongBallY <= pongAIY + 60) {
+    pongBallVX = -pongBallVX;
+    pongBallX = 380;
   }
 
-  // Limite raquetes
-  if (pongPlayerY < 0) pongPlayerY = 0;
-  if (pongPlayerY > 340) pongPlayerY = 340;
-  if (pongAIY < 0) pongAIY = 0;
-  if (pongAIY > 340) pongAIY = 340;
+  // AI simples com 60% chance de acertar
+  let chance = Math.random();
+  if (chance < 0.6) {
+    if (pongBallY > pongAIY + 30) pongAIY += 3;
+    else if (pongBallY < pongAIY + 30) pongAIY -= 3;
+  }
+
+  // Mantém AI dentro do canvas
+  pongAIY = Math.max(0, Math.min(340, pongAIY));
+  pongPlayerY = Math.max(0, Math.min(340, pongPlayerY));
 
   // Pontuação
   if (pongBallX < 0) {
@@ -289,10 +295,9 @@ function drawPong() {
     resetBall();
   }
 
-  ctx.fillStyle = "white";
   ctx.font = "20px Arial";
-  ctx.fillText("Você: " + pongPlayerScore, 10, 20);
-  ctx.fillText("IA: " + pongAIScore, 320, 20);
+  ctx.fillText("Você: " + pongPlayerScore, 20, 30);
+  ctx.fillText("CPU: " + pongAIScore, 300, 30);
 }
 
 function resetBall() {
