@@ -47,27 +47,33 @@ function iniciarJogo(tipo) {
 }
 
 // === SNAKE ===
-let snake, food, dx, dy, score;
+let snake = [];
+let food = {};
+let dx = 0;
+let dy = 0;
+let score = 0;
 let snakeInterval;
 
 function iniciarSnake() {
+  clearInterval(snakeInterval);
   snake = [{ x: 10, y: 10 }];
-  food = gerarComida();
   dx = 1;
   dy = 0;
   score = 0;
-  clearInterval(snakeInterval);
+  food = gerarComida();
+  desenharSnake();
   snakeInterval = setInterval(atualizarSnake, 150);
 }
 
 function atualizarSnake() {
   const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
-  if (colisao(head)) {
+  if (colidiu(head)) {
     clearInterval(snakeInterval);
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
-    ctx.fillText("Game Over", canvas.width / 2 - 70, canvas.height / 2);
+    ctx.fillText("Game Over", canvas.width / 2 - 80, canvas.height / 2);
+    setTimeout(iniciarSnake, 2000);
     return;
   }
 
@@ -84,46 +90,59 @@ function atualizarSnake() {
 }
 
 function desenharSnake() {
-  ctx.fillStyle = "#222";
+  ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Cobra
   ctx.fillStyle = "#f39c12";
-  snake.forEach(parte => {
-    ctx.fillRect(parte.x * 20, parte.y * 20, 18, 18);
-  });
+  snake.forEach(s => ctx.fillRect(s.x * 20, s.y * 20, 18, 18));
 
-  // Comida
   ctx.fillStyle = "#e74c3c";
   ctx.fillRect(food.x * 20, food.y * 20, 18, 18);
 
-  // Pontuação
   ctx.fillStyle = "white";
   ctx.font = "16px Arial";
   ctx.fillText("Pontuação: " + score, 10, 20);
 }
 
 function gerarComida() {
-  const maxX = canvas.width / 20;
-  const maxY = canvas.height / 20;
   let nova;
   do {
     nova = {
-      x: Math.floor(Math.random() * maxX),
-      y: Math.floor(Math.random() * maxY)
+      x: Math.floor(Math.random() * (canvas.width / 20)),
+      y: Math.floor(Math.random() * (canvas.height / 20))
     };
   } while (snake.some(s => s.x === nova.x && s.y === nova.y));
   return nova;
 }
 
-function colisao(head) {
+function colidiu(head) {
   return (
     head.x < 0 || head.y < 0 ||
     head.x >= canvas.width / 20 ||
     head.y >= canvas.height / 20 ||
-    snake.some(parte => parte.x === head.x && parte.y === head.y)
+    snake.some(s => s.x === head.x && s.y === head.y)
   );
 }
+
+document.addEventListener("keydown", e => {
+  if (jogo !== "snake") return;
+  if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -1; }
+  else if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = 1; }
+  else if (e.key === "ArrowLeft" && dx === 0) { dx = -1; dy = 0; }
+  else if (e.key === "ArrowRight" && dx === 0) { dx = 1; dy = 0; }
+});
+
+document.querySelectorAll("#mobileControls .arrow-btn").forEach(btn => {
+  btn.addEventListener("touchstart", () => {
+    if (jogo !== "snake") return;
+    const dir = btn.getAttribute("data-dir");
+    if (dir === "UP" && dy === 0) { dx = 0; dy = -1; }
+    else if (dir === "DOWN" && dy === 0) { dx = 0; dy = 1; }
+    else if (dir === "LEFT" && dx === 0) { dx = -1; dy = 0; }
+    else if (dir === "RIGHT" && dx === 0) { dx = 1; dy = 0; }
+  });
+});
+
 
 // Controles Snake
 document.addEventListener("keydown", e => {
