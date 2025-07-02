@@ -5,6 +5,16 @@ let snake = [];
 let food;
 let score = 0;
 
+let pongPlayerY = 150;
+let pongAIY = 150;
+let pongBallX = 200, pongBallY = 200;
+let pongBallVX = 4, pongBallVY = 4;
+let pongPlayerScore = 0, pongAIScore = 0;
+
+let emojis = ["🍎", "🍌", "🍇", "🍒", "🍉", "🍍", "🥝", "🍑"];
+let cartas = [], cartasSelecionadas = [];
+let fase = 1;
+
 // === Função para mostrar a galeria de jogos ===
 function mostrarGaleria() {
   document.getElementById("telaInicial").style.display = "none";
@@ -64,6 +74,7 @@ function setupArrowButtons(callback) {
     });
   });
 }
+
 // === JOGO DA COBRINHA ===
 function startSnake() {
   document.getElementById("controlesSnake").style.display = "none";
@@ -79,6 +90,7 @@ function startSnake() {
     x: Math.floor(Math.random() * 20),
     y: Math.floor(Math.random() * 20)
   };
+  clearInterval(gameLoop);
   gameLoop = setInterval(drawSnake, 150);
 }
 
@@ -139,12 +151,8 @@ function drawSnake() {
   ctx.font = "16px Arial";
   ctx.fillText("Pontuação: " + score, 10, 390);
 }
-let pongPlayerY = 150;
-let pongAIY = 150;
-let pongBallX = 200, pongBallY = 200;
-let pongBallVX = 3, pongBallVY = 3;
-let pongPlayerScore = 0, pongAIScore = 0;
 
+// === JOGO PONG ===
 function startPong() {
   document.getElementById("controlesPong").style.display = "none";
   canvas.style.display = "block";
@@ -152,9 +160,12 @@ function startPong() {
   setupSwipeControls(canvas, pongSwipeHandler);
   setupArrowButtons(pongSwipeHandler);
   pongBallX = 200; pongBallY = 200;
-  pongBallVX = 3; pongBallVY = 3;
+  pongBallVX = 4; pongBallVY = 4;
   pongPlayerScore = 0; pongAIScore = 0;
-  gameLoop = setInterval(drawPong, 30);
+  pongPlayerY = 150;
+  pongAIY = 150;
+  clearInterval(gameLoop);
+  gameLoop = setInterval(drawPong, 16);
 }
 
 function pongSwipeHandler(direction) {
@@ -163,20 +174,53 @@ function pongSwipeHandler(direction) {
 }
 
 function drawPong() {
-  ctx.fillStyle = "black";
+  // Fundo degradê
+  let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grad.addColorStop(0, "#000000");
+  grad.addColorStop(1, "#222222");
+  ctx.fillStyle = grad;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "white";
-  ctx.fillRect(10, pongPlayerY, 10, 80); // jogador
-  ctx.fillRect(380, pongAIY, 10, 80); // IA
+  // Limitar raquetes dentro do canvas
+  if (pongPlayerY < 0) pongPlayerY = 0;
+  if (pongPlayerY > canvas.height - 80) pongPlayerY = canvas.height - 80;
+
+  if (pongAIY < 0) pongAIY = 0;
+  if (pongAIY > canvas.height - 80) pongAIY = canvas.height - 80;
+
+  // Raquetes com sombras
+  ctx.fillStyle = "#4CAF50"; // jogador
+  ctx.shadowColor = "#2E7D32";
+  ctx.shadowBlur = 8;
+  ctx.fillRect(10, pongPlayerY, 10, 80);
+
+  ctx.fillStyle = "#F44336"; // IA
+  ctx.shadowColor = "#B71C1C";
+  ctx.shadowBlur = 8;
+  ctx.fillRect(380, pongAIY, 10, 80);
+
+  ctx.shadowBlur = 0;
+
+  // Bola com brilho e limitação nas bordas verticais
   ctx.beginPath();
+  let radgrad = ctx.createRadialGradient(pongBallX, pongBallY, 3, pongBallX, pongBallY, 10);
+  radgrad.addColorStop(0, "#FFF");
+  radgrad.addColorStop(1, "#AAA");
+  ctx.fillStyle = radgrad;
   ctx.arc(pongBallX, pongBallY, 10, 0, Math.PI * 2);
   ctx.fill();
 
   pongBallX += pongBallVX;
   pongBallY += pongBallVY;
 
-  if (pongBallY < 0 || pongBallY > 400) pongBallVY *= -1;
+  if (pongBallY < 10) {
+    pongBallY = 10;
+    pongBallVY *= -1;
+  }
+  if (pongBallY > canvas.height - 10) {
+    pongBallY = canvas.height - 10;
+    pongBallVY *= -1;
+  }
 
   if (
     (pongBallX < 20 && pongBallY > pongPlayerY && pongBallY < pongPlayerY + 80) ||
@@ -192,31 +236,30 @@ function drawPong() {
     resetBall();
   }
 
-  // IA com 60% de chance de acerto
+  // IA 60% acerto
   if (pongBallVX > 0) {
     if (Math.random() < 0.6) {
-      if (pongBallY > pongAIY + 40) pongAIY += 3;
-      else if (pongBallY < pongAIY + 40) pongAIY -= 3;
+      if (pongBallY > pongAIY + 40) pongAIY += 4;
+      else if (pongBallY < pongAIY + 40) pongAIY -= 4;
     } else {
-      pongAIY += Math.random() > 0.5 ? 3 : -3;
+      pongAIY += Math.random() > 0.5 ? 4 : -4;
     }
   }
 
-  ctx.font = "16px Arial";
-  ctx.fillText("Você: " + pongPlayerScore, 20, 20);
-  ctx.fillText("IA: " + pongAIScore, 320, 20);
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.fillText("Você: " + pongPlayerScore, 20, 30);
+  ctx.fillText("IA: " + pongAIScore, 320, 30);
 }
 
 function resetBall() {
   pongBallX = 200;
   pongBallY = 200;
-  pongBallVX = Math.random() > 0.5 ? 3 : -3;
-  pongBallVY = Math.random() > 0.5 ? 3 : -3;
+  pongBallVX = Math.random() > 0.5 ? 4 : -4;
+  pongBallVY = Math.random() > 0.5 ? 4 : -4;
 }
-let emojis = ["🍎", "🍌", "🍇", "🍒", "🍉", "🍍", "🥝", "🍑"];
-let cartas = [], cartasSelecionadas = [];
-let fase = 1;
 
+// === JOGO DA MEMÓRIA ===
 function startMemoria() {
   canvas.style.display = "none";
   document.getElementById("memoriaContainer").style.display = "block";
@@ -253,54 +296,39 @@ function iniciarFaseMemoria() {
 }
 
 function revelarCarta(carta) {
-  if (cartasSelecionadas.length < 2 && !carta.classList.contains("revelada")) {
-    carta.innerHTML = carta.dataset.valor;
-    carta.classList.add("revelada");
-    cartasSelecionadas.push(carta);
+  if (cartasSelecionadas.length >= 2 || carta.classList.contains("revelada")) return;
+  carta.classList.add("revelada");
+  carta.innerHTML = carta.dataset.valor;
+  cartasSelecionadas.push(carta);
 
-    if (cartasSelecionadas.length === 2) {
+  if (cartasSelecionadas.length === 2) {
+    if (cartasSelecionadas[0].dataset.valor === cartasSelecionadas[1].dataset.valor) {
+      cartasSelecionadas = [];
+      if (cartas.every(c => c.classList.contains("revelada"))) {
+        document.getElementById("btnProximaFase").style.display = "inline-block";
+      }
+    } else {
       setTimeout(() => {
-        const [c1, c2] = cartasSelecionadas;
-        if (c1.dataset.valor === c2.dataset.valor) {
-          c1.onclick = null;
-          c2.onclick = null;
-        } else {
-          c1.innerHTML = "❓";
-          c2.innerHTML = "❓";
-          c1.classList.remove("revelada");
-          c2.classList.remove("revelada");
-        }
+        cartasSelecionadas.forEach(c => {
+          c.classList.remove("revelada");
+          c.innerHTML = "❓";
+        });
         cartasSelecionadas = [];
-
-        if ([...document.querySelectorAll(".card-memoria")].every(c => c.classList.contains("revelada"))) {
-          document.getElementById("btnProximaFase").style.display = "inline-block";
-        }
-      }, 800);
+      }, 1000);
     }
   }
 }
 
-// === CONTROLE POR TECLADO (PC) ===
-document.addEventListener("keydown", function (e) {
-  const tecla = e.key;
-
-  // Jogo da cobrinha
-  if (canvas && canvas.style.display === "block" && gameLoop && typeof swipeSnake === "function") {
-    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(tecla)) {
-      e.preventDefault();
-      if (tecla === "ArrowLeft" && d !== "RIGHT") d = "LEFT";
-      else if (tecla === "ArrowUp" && d !== "DOWN") d = "UP";
-      else if (tecla === "ArrowRight" && d !== "LEFT") d = "RIGHT";
-      else if (tecla === "ArrowDown" && d !== "UP") d = "DOWN";
-    }
+// === EVENTOS DE TECLADO ===
+document.addEventListener("keydown", e => {
+  if (d !== "") {
+    if (e.key === "ArrowLeft" && d !== "RIGHT") d = "LEFT";
+    else if (e.key === "ArrowUp" && d !== "DOWN") d = "UP";
+    else if (e.key === "ArrowRight" && d !== "LEFT") d = "RIGHT";
+    else if (e.key === "ArrowDown" && d !== "UP") d = "DOWN";
   }
-
-  // Jogo Pong
-  if (canvas && canvas.style.display === "block" && gameLoop && typeof pongSwipeHandler === "function") {
-    if (tecla === "ArrowUp") {
-      pongSwipeHandler("UP");
-    } else if (tecla === "ArrowDown") {
-      pongSwipeHandler("DOWN");
-    }
+  if (document.getElementById("controlesPong").style.display === "block") {
+    if (e.key === "ArrowUp") pongPlayerY -= 20;
+    else if (e.key === "ArrowDown") pongPlayerY += 20;
   }
 });
