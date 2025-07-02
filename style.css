@@ -81,7 +81,6 @@ canvas {
   background: #000;
 }
 
-/* Memória */
 .memoria-grid {
   display: grid;
   grid-template-columns: repeat(4, 80px);
@@ -102,6 +101,7 @@ canvas {
   font-size: 36px;
   color: white;
   user-select: none;
+  transition: background-color 0.3s;
 }
 
 .memoria-card.flipped {
