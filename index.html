@@ -7,14 +7,12 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Tela Inicial -->
   <div id="telaInicial" class="tela-inicial">
     <h1>Play Buriti</h1>
     <p>Site desenvolvido por Victor Gabriel<br />Escola Estadual São José do Buriti</p>
     <button id="btnEntrar" class="btn">Entrar nos Jogos</button>
   </div>
 
-  <!-- Tela de Seleção de Jogos -->
   <div id="telaJogos" class="tela-jogos" style="display:none;">
     <button id="btnVoltar" class="btn">Voltar</button>
     <h2>Escolha um jogo:</h2>
@@ -26,11 +24,9 @@
     </div>
   </div>
 
-  <!-- Canvas para jogos -->
   <canvas id="gameCanvas" width="400" height="400" style="display:none;"></canvas>
   <canvas id="tetrisCanvas" width="200" height="400" style="display:none;"></canvas>
 
-  <!-- Jogo da Memória -->
   <div id="memoriaContainer" style="display:none;">
     <h3 id="faseAtual">Fase 1</h3>
     <div id="memoriaGrid" class="memoria-grid"></div>
@@ -38,7 +34,6 @@
     <button id="btnProximaFase" class="btn" style="display:none;">Próxima Fase</button>
   </div>
 
-  <!-- Controles Mobile -->
   <div id="mobileControls" style="display:none;" class="mobile-controls">
     <button class="arrow-btn" data-dir="UP">▲</button>
     <button class="arrow-btn" data-dir="LEFT">◄</button>
@@ -46,7 +41,6 @@
     <button class="arrow-btn" data-dir="RIGHT">►</button>
   </div>
 
-  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>
