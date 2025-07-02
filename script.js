@@ -1,5 +1,7 @@
-// === Variáveis gerais ===
-let canvas, ctx, gameLoop;
+// Variáveis globais para os jogos
+let canvas = document.getElementById("gameCanvas");
+let ctx = canvas.getContext("2d");
+let gameLoop;
 let d = "";
 let snake = [];
 let food;
@@ -8,35 +10,53 @@ let score = 0;
 let pongPlayerY = 150;
 let pongAIY = 150;
 let pongBallX = 200, pongBallY = 200;
-let pongBallVX = 3, pongBallVY = 3; // velocidade reduzida pra Pong
+let pongBallVX = 3, pongBallVY = 3;
 let pongPlayerScore = 0, pongAIScore = 0;
 
 let emojis = ["🍎", "🍌", "🍇", "🍒", "🍉", "🍍", "🥝", "🍑"];
 let cartas = [], cartasSelecionadas = [];
 let fase = 1;
 
-// === Função para mostrar a galeria de jogos ===
-function mostrarGaleria() {
-  document.getElementById("telaInicial").style.display = "none";
-  document.getElementById("galeriaJogos").style.display = "block";
-}
+// Tetris variáveis
+const tetrisCanvas = document.getElementById("tetrisCanvas");
+const tetrisCtx = tetrisCanvas.getContext("2d");
+const ROWS = 20;
+const COLS = 10;
+const BLOCK_SIZE = 20;
+let board = [];
+let currentPiece;
+let currentX, currentY;
+let gameOver = false;
+let tetrisInterval;
 
-// === Função para escolher o jogo ===
+const PIECES = [
+  { shape: [[1,1,1,1]], color: 'cyan' },           // I
+  { shape: [[1,1],[1,1]], color: 'yellow' },       // O
+  { shape: [[0,1,0],[1,1,1]], color: 'purple' },   // T
+  { shape: [[1,1,0],[0,1,1]], color: 'green' },    // S
+  { shape: [[0,1,1],[1,1,0]], color: 'red' },      // Z
+  { shape: [[1,0,0],[1,1,1]], color: 'blue' },     // J
+  { shape: [[0,0,1],[1,1,1]], color: 'orange' }    // L
+];
+
+// Mostra a galeria de jogos (chamado na tela inicial)
 function iniciarJogo(jogo) {
-  canvas = document.getElementById("gameCanvas");
-  ctx = canvas.getContext("2d");
+  clearInterval(gameLoop);
+  gameLoop = null;
+  d = "";
+  snake = [];
+  cartasSelecionadas = [];
+  cartas = [];
+  fase = 1;
+  score = 0;
+
   canvas.style.display = "none";
+  tetrisCanvas.style.display = "none";
   document.getElementById("memoriaContainer").style.display = "none";
+  document.getElementById("mobileControls").style.display = "none";
   document.getElementById("controlesSnake").style.display = "none";
   document.getElementById("controlesPong").style.display = "none";
   document.getElementById("controlesTetris").style.display = "none";
-  document.getElementById("mobileControls").style.display = "none";
-  clearInterval(gameLoop);
-  d = "";
-  snake = [];
-
-  // esconder canvas do Tetris se existir
-  if(window.tetrisCanvas) window.tetrisCanvas.style.display = "none";
 
   if (jogo === "snake") {
     document.getElementById("controlesSnake").style.display = "block";
@@ -49,18 +69,18 @@ function iniciarJogo(jogo) {
   }
 }
 
-// === CONTROLES PARA CELULAR ===
+// --- CONTROLES CELULAR ---
 function setupSwipeControls(element, callbackSwipe) {
   let startX, startY;
-  element.addEventListener("touchstart", function (e) {
-    const touch = e.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
+  element.addEventListener("touchstart", e => {
+    let t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
   });
-  element.addEventListener("touchend", function (e) {
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - startX;
-    const dy = touch.clientY - startY;
+  element.addEventListener("touchend", e => {
+    let t = e.changedTouches[0];
+    let dx = t.clientX - startX;
+    let dy = t.clientY - startY;
     if (Math.abs(dx) > Math.abs(dy)) {
       if (dx > 20) callbackSwipe("RIGHT");
       else if (dx < -20) callbackSwipe("LEFT");
@@ -75,29 +95,29 @@ function setupArrowButtons(callback) {
   const buttons = document.querySelectorAll(".arrow-btn");
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
-      const dir = btn.getAttribute("data-dir");
+      let dir = btn.getAttribute("data-dir");
       callback(dir);
     });
   });
 }
 
-// === JOGO DA COBRINHA ===
+// === SNAKE ===
 function startSnake() {
   document.getElementById("controlesSnake").style.display = "none";
   canvas.style.display = "block";
   document.getElementById("mobileControls").style.display = "block";
+
   setupSwipeControls(canvas, swipeSnake);
   setupArrowButtons(swipeSnake);
+
   score = 0;
   d = "RIGHT";
   snake = [];
   for (let i = 4; i >= 0; i--) snake.push({ x: i, y: 0 });
-  food = {
-    x: Math.floor(Math.random() * 20),
-    y: Math.floor(Math.random() * 20)
-  };
+  food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) };
+
   clearInterval(gameLoop);
-  gameLoop = setInterval(drawSnake, 200);
+  gameLoop = setInterval(drawSnake, 250);
 }
 
 function swipeSnake(direction) {
@@ -131,57 +151,58 @@ function drawSnake() {
   if (d === "DOWN") headY++;
 
   if (
-    headX < 0 || headY < 0 ||
-    headX >= canvas.width / box || headY >= canvas.height / box ||
-    snake.some(s => s.x === headX && s.y === headY)
+    headX < 0 || headX >= 20 ||
+    headY < 0 || headY >= 20 ||
+    snake.some(seg => seg.x === headX && seg.y === headY)
   ) {
     clearInterval(gameLoop);
-    ctx.fillStyle = "#f00";
-    ctx.font = "30px Arial";
-    ctx.fillText("💀 Game Over", 110, 200);
+    ctx.fillStyle = "red";
+    ctx.font = "40px Arial";
+    ctx.fillText("GAME OVER", 90, 200);
     return;
   }
 
-  const newHead = { x: headX, y: headY };
-  snake.unshift(newHead);
-
   if (headX === food.x && headY === food.y) {
     score++;
-    food = {
-      x: Math.floor(Math.random() * 20),
-      y: Math.floor(Math.random() * 20)
-    };
+    food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) };
   } else {
     snake.pop();
   }
 
-  ctx.fillStyle = "#fff";
-  ctx.font = "18px Arial";
+  snake.unshift({ x: headX, y: headY });
+
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
   ctx.fillText("Pontuação: " + score, 10, 390);
 }
 
-// === JOGO PONG ===
+// === PONG ===
+let pongBallSpeed = 3;
 function startPong() {
   document.getElementById("controlesPong").style.display = "none";
   canvas.style.display = "block";
   document.getElementById("mobileControls").style.display = "block";
-  setupSwipeControls(canvas, pongSwipeHandler);
-  setupArrowButtons(pongSwipeHandler);
-  pongBallX = 200; pongBallY = 200;
-  pongBallVX = 3; pongBallVY = 3;
-  pongPlayerScore = 0; pongAIScore = 0;
+
   pongPlayerY = canvas.height / 2 - 35;
   pongAIY = canvas.height / 2 - 35;
+  pongBallX = canvas.width / 2;
+  pongBallY = canvas.height / 2;
+  pongBallVX = pongBallSpeed * (Math.random() > 0.5 ? 1 : -1);
+  pongBallVY = (Math.random() * 4) - 2;
+  pongPlayerScore = 0;
+  pongAIScore = 0;
+
+  setupSwipeControls(canvas, swipePong);
+  setupArrowButtons(swipePong);
+
   clearInterval(gameLoop);
   gameLoop = setInterval(drawPong, 20);
 }
 
-function pongSwipeHandler(direction) {
+function swipePong(direction) {
   const step = 15;
   if (direction === "UP") pongPlayerY -= step;
   else if (direction === "DOWN") pongPlayerY += step;
-  else if (direction === "LEFT") pongPlayerY -= step;
-  else if (direction === "RIGHT") pongPlayerY += step;
 }
 
 function drawPong() {
@@ -254,7 +275,7 @@ function drawPong() {
 function resetPong() {
   pongBallX = canvas.width / 2;
   pongBallY = canvas.height / 2;
-  pongBallVX = pongBallVX > 0 ? 3 : -3;
+  pongBallVX = pongBallSpeed * (Math.random() > 0.5 ? 1 : -1);
   pongBallVY = (Math.random() * 4) - 2;
   pongPlayerY = canvas.height / 2 - 35;
   pongAIY = canvas.height / 2 - 35;
@@ -295,11 +316,11 @@ function criarFase(fase) {
   cartasSelecionadas = [];
   cartas = [];
 
-  const valores = emojis.slice(0, fase + 1);
-  valores.push(...valores);
-  valores.sort(() => 0.5 - Math.random());
+  const valores = emojis.slice(0, Math.min(fase + 1, emojis.length));
+  const valoresDuplicados = valores.concat(valores);
+  valoresDuplicados.sort(() => 0.5 - Math.random());
 
-  valores.forEach(valor => {
+  valoresDuplicados.forEach(valor => {
     const card = document.createElement("div");
     card.className = "card-memoria";
     card.dataset.valor = valor;
@@ -315,7 +336,7 @@ function criarFase(fase) {
 function selecionarCarta(carta) {
   if (cartasSelecionadas.length >= 2 || carta.classList.contains("revelada")) return;
   carta.classList.add("revelada");
-  carta.innerHTML = carta.dataset.valor;
+  carta.textContent = carta.dataset.valor;
   cartasSelecionadas.push(carta);
 
   if (cartasSelecionadas.length === 2) {
@@ -328,7 +349,7 @@ function selecionarCarta(carta) {
       setTimeout(() => {
         cartasSelecionadas.forEach(c => {
           c.classList.remove("revelada");
-          c.innerHTML = "❓";
+          c.textContent = "❓";
         });
         cartasSelecionadas = [];
       }, 1000);
@@ -337,65 +358,15 @@ function selecionarCarta(carta) {
 }
 
 // === JOGO TETRIS ===
-// (Segue o código do Tetris conforme seu último pedido)
-
-let tetrisCanvas, tetrisCtx;
-let tetrisInterval;
-const ROWS = 20;
-const COLS = 10;
-const BLOCK_SIZE = 20;
-let board = [];
-let currentPiece;
-let currentX, currentY;
-let gameOver = false;
-
-const PIECES = [
-  { shape: [[1,1,1,1]], color: 'cyan' },           // I
-  { shape: [[1,1],[1,1]], color: 'yellow' },       // O
-  { shape: [[0,1,0],[1,1,1]], color: 'purple' },   // T
-  { shape: [[1,1,0],[0,1,1]], color: 'green' },    // S
-  { shape: [[0,1,1],[1,1,0]], color: 'red' },      // Z
-  { shape: [[1,0,0],[1,1,1]], color: 'blue' },     // J
-  { shape: [[0,0,1],[1,1,1]], color: 'orange' }    // L
-];
-
 function startTetris() {
   document.getElementById("controlesTetris").style.display = "none";
   document.getElementById("controlesSnake").style.display = "none";
   document.getElementById("controlesPong").style.display = "none";
   document.getElementById("memoriaContainer").style.display = "none";
   document.getElementById("mobileControls").style.display = "block";
-
-  if (!tetrisCanvas) {
-    tetrisCanvas = document.createElement("canvas");
-    tetrisCanvas.id = "tetrisCanvas";
-    tetrisCanvas.width = COLS * BLOCK_SIZE;
-    tetrisCanvas.height = ROWS * BLOCK_SIZE;
-    tetrisCtx = tetrisCanvas.getContext("2d");
-    document.body.appendChild(tetrisCanvas);
-
-    // Controle toque para tetris
-    let touchStartX = null;
-    tetrisCanvas.addEventListener("touchstart", e => {
-      touchStartX = e.touches[0].clientX;
-    });
-    tetrisCanvas.addEventListener("touchend", e => {
-      if(!touchStartX) return;
-      let touchEndX = e.changedTouches[0].clientX;
-      let dx = touchEndX - touchStartX;
-      if(dx > 30 && !collides(currentPiece.shape, currentX + 1, currentY)) currentX++;
-      else if(dx < -30 && !collides(currentPiece.shape, currentX - 1, currentY)) currentX--;
-      else {
-        const rotated = rotate(currentPiece.shape);
-        if(!collides(rotated, currentX, currentY)) currentPiece.shape = rotated;
-      }
-      touchStartX = null;
-      drawBoard();
-    });
-  }
-
-  tetrisCanvas.style.display = "block";
   canvas.style.display = "none";
+  tetrisCanvas.style.display = "block";
+
   initBoard();
   spawnPiece();
   gameOver = false;
@@ -406,9 +377,11 @@ function startTetris() {
 
 function initBoard() {
   board = [];
-  for (let r=0; r<ROWS; r++) {
+  for (let r = 0; r < ROWS; r++) {
     board[r] = [];
-    for (let c=0; c<COLS; c++) board[r][c] = 0;
+    for (let c = 0; c < COLS; c++) {
+      board[r][c] = 0;
+    }
   }
 }
 
@@ -422,23 +395,23 @@ function drawBlock(x, y, color) {
 
 function drawBoard() {
   tetrisCtx.clearRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
-  for(let r=0; r<ROWS; r++) {
-    for(let c=0; c<COLS; c++) {
-      if(board[r][c]) drawBlock(c*BLOCK_SIZE, r*BLOCK_SIZE, board[r][c]);
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c]) drawBlock(c * BLOCK_SIZE, r * BLOCK_SIZE, board[r][c]);
     }
   }
-  for(let r=0; r<currentPiece.shape.length; r++) {
-    for(let c=0; c<currentPiece.shape[r].length; c++) {
-      if(currentPiece.shape[r][c]) drawBlock((currentX+c)*BLOCK_SIZE, (currentY+r)*BLOCK_SIZE, currentPiece.color);
+  for (let r = 0; r < currentPiece.shape.length; r++) {
+    for (let c = 0; c < currentPiece.shape[r].length; c++) {
+      if (currentPiece.shape[r][c]) drawBlock((currentX + c) * BLOCK_SIZE, (currentY + r) * BLOCK_SIZE, currentPiece.color);
     }
   }
 }
 
 function rotate(piece) {
   const result = [];
-  for(let c=0; c < piece[0].length; c++) {
+  for (let c = 0; c < piece[0].length; c++) {
     const row = [];
-    for(let r=piece.length-1; r >=0; r--) {
+    for (let r = piece.length - 1; r >= 0; r--) {
       row.push(piece[r][c]);
     }
     result.push(row);
@@ -453,13 +426,13 @@ function spawnPiece() {
 }
 
 function collides(shape, x, y) {
-  for(let r=0; r<shape.length; r++) {
-    for(let c=0; c<shape[r].length; c++) {
-      if(shape[r][c]) {
+  for (let r = 0; r < shape.length; r++) {
+    for (let c = 0; c < shape[r].length; c++) {
+      if (shape[r][c]) {
         let newX = x + c;
         let newY = y + r;
-        if(newX < 0 || newX >= COLS || newY >= ROWS) return true;
-        if(newY >= 0 && board[newY][newX]) return true;
+        if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+        if (newY >= 0 && board[newY][newX]) return true;
       }
     }
   }
@@ -467,16 +440,16 @@ function collides(shape, x, y) {
 }
 
 function fixPiece() {
-  for(let r=0; r<currentPiece.shape.length; r++) {
-    for(let c=0; c<currentPiece.shape[r].length; c++) {
-      if(currentPiece.shape[r][c]) board[currentY + r][currentX + c] = currentPiece.color;
+  for (let r = 0; r < currentPiece.shape.length; r++) {
+    for (let c = 0; c < currentPiece.shape[r].length; c++) {
+      if (currentPiece.shape[r][c]) board[currentY + r][currentX + c] = currentPiece.color;
     }
   }
 }
 
 function clearLines() {
-  for(let r=ROWS-1; r>=0; r--) {
-    if(board[r].every(cell => cell !== 0)) {
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (board[r].every(cell => cell !== 0)) {
       board.splice(r, 1);
       board.unshift(new Array(COLS).fill(0));
       r++;
@@ -485,39 +458,39 @@ function clearLines() {
 }
 
 function tetrisLoop() {
-  if(gameOver) {
+  if (gameOver) {
     tetrisCtx.fillStyle = "white";
     tetrisCtx.font = "30px Arial";
-    tetrisCtx.fillText("Game Over!", 70, 200);
+    tetrisCtx.fillText("Game Over!", 40, 200);
     clearInterval(tetrisInterval);
     return;
   }
-  if(!collides(currentPiece.shape, currentX, currentY + 1)) currentY++;
+  if (!collides(currentPiece.shape, currentX, currentY + 1)) currentY++;
   else {
     fixPiece();
     clearLines();
     spawnPiece();
-    if(collides(currentPiece.shape, currentX, currentY)) gameOver = true;
+    if (collides(currentPiece.shape, currentX, currentY)) gameOver = true;
   }
   drawBoard();
 }
 
 // Controles teclado tetris
-document.addEventListener("keydown", function(e){
-  if(!tetrisCanvas || tetrisCanvas.style.display === "none") return;
-  switch(e.key){
+document.addEventListener("keydown", function (e) {
+  if (tetrisCanvas.style.display === "none") return;
+  switch (e.key) {
     case "ArrowLeft":
-      if(!collides(currentPiece.shape, currentX - 1, currentY)) currentX--;
+      if (!collides(currentPiece.shape, currentX - 1, currentY)) currentX--;
       break;
     case "ArrowRight":
-      if(!collides(currentPiece.shape, currentX + 1, currentY)) currentX++;
+      if (!collides(currentPiece.shape, currentX + 1, currentY)) currentX++;
       break;
     case "ArrowDown":
-      if(!collides(currentPiece.shape, currentX, currentY + 1)) currentY++;
+      if (!collides(currentPiece.shape, currentX, currentY + 1)) currentY++;
       break;
     case "ArrowUp":
       const rotated = rotate(currentPiece.shape);
-      if(!collides(rotated, currentX, currentY)) currentPiece.shape = rotated;
+      if (!collides(rotated, currentX, currentY)) currentPiece.shape = rotated;
       break;
   }
   drawBoard();
