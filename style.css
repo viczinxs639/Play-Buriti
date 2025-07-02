@@ -1,126 +1,97 @@
 body {
-  margin: 0;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #111;
   color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: center;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.tela-inicial, .tela-jogos {
-  background: rgba(0,0,0,0.6);
-  margin: 0 auto;
-  padding: 30px;
-  border-radius: 15px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 0 15px #00ff90;
-}
-
-.tela-inicial h1 {
-  font-size: 3rem;
-  margin-bottom: 10px;
-  color: #00ff90;
-  text-shadow: 0 0 15px #00ff90;
-}
-
-.tela-inicial p {
-  margin: 5px 0;
-  font-weight: 600;
+  margin: 0;
+  padding: 0;
 }
 
 button {
-  background: #00ff90;
+  background-color: #222;
   border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  color: white;
+  font-size: 18px;
   border-radius: 8px;
-  padding: 12px 20px;
-  margin: 10px 5px;
   cursor: pointer;
-  font-weight: 700;
-  color: #004d40;
-  font-size: 1.1rem;
-  box-shadow: 0 0 10px #00ff90;
-  transition: background 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background: #00cc70;
-  color: #00332e;
+  background-color: #444;
 }
 
-canvas {
-  display: block;
-  margin: 20px auto;
-  background-color: #111;
-  border-radius: 10px;
-  box-shadow: 0 0 20px #00ff90;
+.tela-inicial {
+  margin-top: 100px;
+}
+
+.tela-jogos {
+  margin-top: 50px;
+}
+
+#gameCanvas, #tetrisCanvas {
+  border: 3px solid #444;
+  margin-top: 20px;
+  background-color: #000;
+}
+
+#memoriaContainer {
+  margin-top: 20px;
 }
 
 #memoriaGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-  gap: 10px;
-  max-width: 350px;
+  max-width: 400px;
   margin: 20px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 10px;
 }
 
 .carta {
-  background-color: #004d40;
-  border-radius: 8px;
-  font-size: 30px;
-  color: #00ff90;
+  background-color: #222;
+  border: 2px solid #555;
+  border-radius: 10px;
+  font-size: 40px;
+  color: white;
   cursor: pointer;
   user-select: none;
-  height: 50px;
+  height: 60px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 0 8px #00ff90;
+  align-items: center;
   transition: background-color 0.3s ease;
 }
 
 .carta.revelada {
-  background-color: #00796b;
-  box-shadow: 0 0 12px #00ff90;
+  background-color: #39FF14;
+  border-color: #0B610B;
   cursor: default;
 }
 
-#mobileControls {
-  margin: 10px auto;
-  max-width: 220px;
+.mobile-dpad {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  user-select: none;
+  z-index: 100;
+}
+
+.mobile-dpad button {
+  font-size: 30px;
+  width: 50px;
+  height: 50px;
+  margin: 3px;
+  border-radius: 8px;
+  background-color: #222;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-dpad > div {
   display: flex;
   justify-content: center;
-  gap: 15px;
-}
-
-.arrow-btn {
-  background: #00ff90;
-  border: none;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  font-size: 25px;
-  font-weight: 700;
-  color: #004d40;
-  cursor: pointer;
-  box-shadow: 0 0 10px #00ff90;
-  user-select: none;
-}
-
-.arrow-btn:active {
-  background: #00cc70;
-}
-
-#controlesSnake, #controlesPong, #controlesTetris {
-  margin: 15px auto;
-  max-width: 400px;
-}
-
-#controlesSnake button, #controlesPong button, #controlesTetris button {
-  width: 150px;
-  margin: 0 auto;
-  display: block;
+  margin-top: 3px;
 }
