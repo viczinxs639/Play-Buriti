@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,64 +7,43 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <div class="tela-inicial" id="telaInicial">
-    <h1>🎮 Bem-vindo ao Play Buriti! 🎮</h1>
-    <p>Entre e jogue diversos jogos incríveis criados especialmente para você!</p>
-    <button class="btn" onclick="mostrarGaleria()">Entrar nos Jogos</button>
-    <footer>Criado por Victor Gabriel - Escola Estadual São José do Buriti</footer>
+  <div id="telaInicial">
+    <h1>🎮 Play Buriti</h1>
+    <p>Bem-vindo ao seu portal de jogos!</p>
+    <button onclick="mostrarGaleria()">Entrar nos jogos</button>
   </div>
 
-  <div class="galeria" id="galeriaJogos" style="display:none;">
-    <h2>Escolha um jogo</h2>
-    <div class="grid">
-      <div class="card">
-        <h3>🐍 Snake</h3>
-        <button onclick="iniciarJogo('snake')">Selecionar</button>
-      </div>
-      <div class="card">
-        <h3>🏓 Pong</h3>
-        <button onclick="iniciarJogo('pong')">Selecionar</button>
-      </div>
-      <div class="card">
-        <h3>🧠 Jogo da Memória</h3>
-        <button onclick="iniciarJogo('memoria')">Selecionar</button>
-      </div>
-    </div>
-
-    <!-- Controles de iniciar -->
-    <div id="controlesSnake" style="display:none;">
-      <button class="btn" onclick="startSnake()">Iniciar Cobrinha</button>
-    </div>
-
-    <div id="controlesPong" style="display:none;">
-      <button class="btn" onclick="startPong()">Iniciar Pong</button>
-    </div>
-
-    <!-- Canvas dos jogos -->
-    <canvas id="gameCanvas" width="400" height="400" style="display:none;"></canvas>
-
-    <!-- Jogo da Memória -->
-    <div id="memoriaContainer" style="display:none;">
-      <div id="memoriaInfo">
-        <button id="btnIniciarMemoria">Iniciar Memória</button>
-        <button id="btnProximaFase" style="display:none;">Próxima Fase</button>
-        <p id="memoriaFase">Fase: 1</p>
-      </div>
-      <div id="cartasContainer"></div>
-    </div>
+  <div id="galeriaJogos" style="display:none">
+    <h2>Escolha um jogo:</h2>
+    <button onclick="iniciarJogo('snake')">🐍 Snake</button>
+    <button onclick="iniciarJogo('pong')">🏓 Pong</button>
+    <button onclick="iniciarJogo('memoria')">🧠 Memória</button>
   </div>
 
-  <!-- Setas visuais para celular -->
-  <div id="mobileControls" class="mobile-controls" style="display:none;">
-    <div class="row">
-      <button class="arrow-btn" data-dir="UP">⬆️</button>
-    </div>
-    <div class="row">
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+  <div id="memoriaContainer" style="display:none">
+    <h2>Jogo da Memória</h2>
+    <p id="memoriaFase">Fase: 1</p>
+    <button id="btnIniciarMemoria">Iniciar</button>
+    <div id="cartasContainer"></div>
+    <button id="btnProximaFase" style="display:none">Próxima Fase</button>
+  </div>
+
+  <div id="mobileControls" style="display:none">
+    <div class="setas">
+      <button class="arrow-btn" data-dir="UP">⬆️</button><br />
       <button class="arrow-btn" data-dir="LEFT">⬅️</button>
+      <button class="arrow-btn" data-dir="RIGHT">➡️</button><br />
       <button class="arrow-btn" data-dir="DOWN">⬇️</button>
-      <button class="arrow-btn" data-dir="RIGHT">➡️</button>
     </div>
+  </div>
+
+  <div id="controlesSnake" style="display:none">
+    <button onclick="startSnake()">▶️ Iniciar Snake</button>
+  </div>
+  <div id="controlesPong" style="display:none">
+    <button onclick="startPong()">▶️ Iniciar Pong</button>
   </div>
 
   <script src="script.js"></script>
