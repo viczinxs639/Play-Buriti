@@ -3,64 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Play Buriti</title>
+  <title>Play Buriti - Jogos</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
   <div id="telaInicial" class="tela-inicial">
-    <h1>🎮 Play Buriti</h1>
-    <p>Seu portal de jogos favorito!</p>
-    <button id="btnEntrar" class="btn-entrar">Entrar nos jogos</button>
-    <footer>
-      <p>Site desenvolvido por <strong>Victor Gabriel</strong></p>
-      <p>Escola Estadual São José do Buriti</p>
-    </footer>
+    <h1>Play Buriti</h1>
+    <p>Site desenvolvido por Victor Gabriel</p>
+    <p>Escola Estadual São José do Buriti</p>
+    <button id="btnEntrar">Entrar nos Jogos</button>
   </div>
 
-  <div id="galeriaJogos" class="galeria-jogos" style="display:none">
-    <h2>Escolha um jogo:</h2>
-    <button onclick="iniciarJogo('snake')">🐍 Snake</button>
-    <button onclick="iniciarJogo('pong')">🏓 Pong</button>
-    <button onclick="iniciarJogo('memoria')">🧠 Memória</button>
-    <button onclick="iniciarJogo('tetris')">🧱 Tetris</button>
+  <div id="telaJogos" class="tela-jogos" style="display:none;">
+    <h2>Escolha um jogo</h2>
+    <button onclick="iniciarJogo('snake')">Snake (Cobrinha)</button>
+    <button onclick="iniciarJogo('pong')">Pong</button>
+    <button onclick="iniciarJogo('memoria')">Jogo da Memória</button>
+    <button onclick="iniciarJogo('tetris')">Tetris</button>
+    <button id="btnVoltar">Voltar</button>
   </div>
 
-  <canvas id="gameCanvas" width="400" height="400" style="display:none"></canvas>
+  <canvas id="gameCanvas" width="400" height="400" style="display:none;"></canvas>
+  <canvas id="tetrisCanvas" width="200" height="400" style="display:none;"></canvas>
 
-  <div id="memoriaContainer" style="display:none">
-    <h2>Jogo da Memória</h2>
-    <p id="memoriaFase">Fase: 1</p>
-    <button id="btnIniciarMemoria">Iniciar</button>
-    <div id="cartasContainer"></div>
-    <button id="btnProximaFase" style="display:none">Próxima Fase</button>
+  <div id="memoriaContainer" style="display:none;">
+    <h3 id="faseAtual">Fase 1</h3>
+    <div id="memoriaGrid"></div>
   </div>
 
-  <div id="mobileControls" style="display:none">
-    <div class="setas">
-      <button class="arrow-btn" data-dir="UP">⬆️</button><br />
-      <button class="arrow-btn" data-dir="LEFT">⬅️</button>
-      <button class="arrow-btn" data-dir="RIGHT">➡️</button><br />
-      <button class="arrow-btn" data-dir="DOWN">⬇️</button>
-    </div>
+  <div id="mobileControls" style="display:none;">
+    <button class="arrow-btn" data-dir="UP">▲</button>
+    <button class="arrow-btn" data-dir="LEFT">◄</button>
+    <button class="arrow-btn" data-dir="DOWN">▼</button>
+    <button class="arrow-btn" data-dir="RIGHT">►</button>
   </div>
 
-  <div id="controlesSnake" style="display:none; margin-top: 15px;">
-    <button onclick="startSnake()">▶️ Iniciar Snake</button>
+  <div id="controlesSnake" style="display:none;">
+    <button onclick="startSnake()">Iniciar Snake</button>
   </div>
-  <div id="controlesPong" style="display:none; margin-top: 15px;">
-    <button onclick="startPong()">▶️ Iniciar Pong</button>
+
+  <div id="controlesPong" style="display:none;">
+    <button onclick="startPong()">Iniciar Pong</button>
   </div>
-  <div id="controlesTetris" style="display:none; margin-top: 15px;">
-    <button onclick="startTetris()">▶️ Iniciar Tetris</button>
+
+  <div id="controlesTetris" style="display:none;">
+    <button onclick="startTetris()">Iniciar Tetris</button>
   </div>
 
   <script src="script.js"></script>
-
   <script>
     document.getElementById("btnEntrar").addEventListener("click", () => {
       document.getElementById("telaInicial").style.display = "none";
-      document.getElementById("galeriaJogos").style.display = "block";
+      document.getElementById("telaJogos").style.display = "block";
+    });
+    document.getElementById("btnVoltar").addEventListener("click", () => {
+      document.getElementById("telaJogos").style.display = "none";
+      document.getElementById("telaInicial").style.display = "block";
+      clearInterval(gameLoop);
+      resetDisplays();
     });
   </script>
+
 </body>
 </html>
