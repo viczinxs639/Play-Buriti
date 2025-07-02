@@ -269,100 +269,72 @@ document.querySelectorAll("#mobileControls .arrow-btn").forEach(btn => {
   });
 });
 
-// --------------------
-// JOGO DA MEMÓRIA COM FASES E IMAGENS
-// --------------------
-const memoriaGrid = document.getElementById("memoriaGrid");
-const btnIniciarMemoria = document.getElementById("btnIniciarMemoria");
-const btnProximaFase = document.getElementById("btnProximaFase");
-const faseAtualTexto = document.getElementById("faseAtual");
+// === JOGO DA MEMÓRIA COM EMOJIS ===
+const cartasEmoji = ['🍎','🍌','🍓','🍇','🍉','🍍','🥝','🍑'];
+let cartas, cartaVirada = null, travar = false, acertos = 0, fase = 1;
 
-let memoriaFase = 1;
-let cartas = [];
-let cartasReveladas = [];
-let paresEncontrados = 0;
+function iniciarMemoria() {
+  const container = document.getElementById("memoriaGrid");
+  document.getElementById("faseAtual").textContent = "Fase " + fase;
+  container.innerHTML = "";
+  document.getElementById("btnIniciarMemoria").style.display = "none";
+  document.getElementById("btnProximaFase").style.display = "none";
+  acertos = 0;
 
-const imagensMemoria = [
-  "https://i.imgur.com/7v9jI5h.png", // maçã
-  "https://i.imgur.com/NPz5XzT.png", // banana
-  "https://i.imgur.com/EtbYTgM.png", // cereja
-  "https://i.imgur.com/YChNOOe.png", // uva
-  "https://i.imgur.com/5EmRyqE.png", // morango
-  "https://i.imgur.com/EsH54yX.png", // limão
-  "https://i.imgur.com/vjCPvPz.png", // laranja
-  "https://i.imgur.com/YPhSg8p.png"  // kiwi
-];
+  // define quantidade de pares pela fase
+  const totalPares = Math.min(fase + 3, cartasEmoji.length);
+  const emojisUsados = cartasEmoji.slice(0, totalPares);
+  cartas = [...emojisUsados, ...emojisUsados].sort(() => 0.5 - Math.random());
 
-function startMemoria() {
-  document.getElementById("memoriaContainer").style.display = "block";
-  memoriaFase = 1;
-  btnProximaFase.style.display = "none";
-  faseAtualTexto.textContent = `Fase ${memoriaFase}`;
-  montarTabuleiro();
-}
-
-function montarTabuleiro() {
-  memoriaGrid.innerHTML = "";
-  cartasReveladas = [];
-  paresEncontrados = 0;
-
-  let qtdPares = Math.min(memoriaFase + 1, imagensMemoria.length);
-  let selecionadas = imagensMemoria.slice(0, qtdPares);
-
-  cartas = [...selecionadas, ...selecionadas];
-  cartas.sort(() => 0.5 - Math.random());
-
-  memoriaGrid.style.gridTemplateColumns = `repeat(${qtdPares}, 70px)`;
-
-  cartas.forEach((img, index) => {
-    const div = document.createElement("div");
-    div.classList.add("carta");
-    div.dataset.index = index;
-    div.innerHTML = `<img src="https://i.imgur.com/8n7vFhM.png" alt="carta" width="60" height="60">`; // verso da carta
-    div.addEventListener("click", () => revelarCarta(div));
-    memoriaGrid.appendChild(div);
+  cartas.forEach((emoji, index) => {
+    const carta = document.createElement("div");
+    carta.classList.add("carta");
+    carta.dataset.index = index;
+    carta.dataset.valor = emoji;
+    carta.innerHTML = ""; // começa escondida
+    carta.addEventListener("click", virarCarta);
+    container.appendChild(carta);
   });
 }
 
-function revelarCarta(div) {
-  if (cartasReveladas.length >= 2 || div.classList.contains("revelada")) return;
-  const idx = parseInt(div.dataset.index);
-  div.innerHTML = `<img src="${cartas[idx]}" alt="img" width="60" height="60">`;
-  div.classList.add("revelada");
-  cartasReveladas.push(div);
+function virarCarta(e) {
+  if (travar) return;
+  const carta = e.currentTarget;
+  const valor = carta.dataset.valor;
+  if (carta.classList.contains("virada") || carta === cartaVirada) return;
 
-  if (cartasReveladas.length === 2) {
-    const i1 = parseInt(cartasReveladas[0].dataset.index);
-    const i2 = parseInt(cartasReveladas[1].dataset.index);
-    if (cartas[i1] === cartas[i2]) {
-      paresEncontrados++;
-      cartasReveladas = [];
-      if (paresEncontrados === cartas.length / 2) {
-        btnProximaFase.style.display = "inline-block";
+  carta.innerHTML = valor;
+  carta.classList.add("virada");
+
+  if (!cartaVirada) {
+    cartaVirada = carta;
+  } else {
+    travar = true;
+    if (carta.dataset.valor === cartaVirada.dataset.valor) {
+      acertos++;
+      cartaVirada = null;
+      travar = false;
+      if (acertos === cartas.length / 2) {
+        document.getElementById("btnProximaFase").style.display = "inline-block";
       }
     } else {
       setTimeout(() => {
-        cartasReveladas.forEach(c => {
-          c.classList.remove("revelada");
-          c.innerHTML = `<img src="https://i.imgur.com/8n7vFhM.png" alt="carta" width="60" height="60">`;
-        });
-        cartasReveladas = [];
-      }, 1000);
+        carta.innerHTML = "";
+        carta.classList.remove("virada");
+        cartaVirada.innerHTML = "";
+        cartaVirada.classList.remove("virada");
+        cartaVirada = null;
+        travar = false;
+      }, 800);
     }
   }
 }
 
-btnIniciarMemoria.onclick = () => {
-  montarTabuleiro();
-  btnProximaFase.style.display = "none";
-};
-
-btnProximaFase.onclick = () => {
-  memoriaFase++;
-  faseAtualTexto.textContent = `Fase ${memoriaFase}`;
-  montarTabuleiro();
-  btnProximaFase.style.display = "none";
-};
+document.getElementById("btnIniciarMemoria").addEventListener("click", iniciarMemoria);
+document.getElementById("btnProximaFase").addEventListener("click", () => {
+  fase++;
+  iniciarMemoria();
+});
 
 // --------------------
 // JOGO TETRIS COLORIDO SIMPLES
