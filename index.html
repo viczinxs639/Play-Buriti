@@ -30,13 +30,17 @@
   <div id="memoriaContainer" style="display:none;">
     <h3 id="faseAtual">Fase 1</h3>
     <div id="memoriaGrid"></div>
+    <button id="btnIniciarMemoria">Iniciar Memória</button>
+    <button id="btnProximaFase" style="display:none;">Próxima Fase</button>
   </div>
 
-  <div id="mobileControls" style="display:none;">
+  <div id="mobileControls" style="display:none;" class="mobile-dpad">
     <button class="arrow-btn" data-dir="UP">▲</button>
-    <button class="arrow-btn" data-dir="LEFT">◄</button>
-    <button class="arrow-btn" data-dir="DOWN">▼</button>
-    <button class="arrow-btn" data-dir="RIGHT">►</button>
+    <div>
+      <button class="arrow-btn" data-dir="LEFT">◄</button>
+      <button class="arrow-btn" data-dir="DOWN">▼</button>
+      <button class="arrow-btn" data-dir="RIGHT">►</button>
+    </div>
   </div>
 
   <div id="controlesSnake" style="display:none;">
@@ -52,18 +56,5 @@
   </div>
 
   <script src="script.js"></script>
-  <script>
-    document.getElementById("btnEntrar").addEventListener("click", () => {
-      document.getElementById("telaInicial").style.display = "none";
-      document.getElementById("telaJogos").style.display = "block";
-    });
-    document.getElementById("btnVoltar").addEventListener("click", () => {
-      document.getElementById("telaJogos").style.display = "none";
-      document.getElementById("telaInicial").style.display = "block";
-      clearInterval(gameLoop);
-      resetDisplays();
-    });
-  </script>
-
 </body>
 </html>
