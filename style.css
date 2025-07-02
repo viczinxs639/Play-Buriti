@@ -105,3 +105,12 @@ canvas {
   font-size: 30px;
   margin: 5px;
 }
+
+/* Tetris */
+#tetrisCanvas {
+  border: 2px solid #6a11cb;
+  background-color: #111;
+  display: none;
+  margin: 20px auto;
+  box-shadow: 0 0 10px #6a11cb;
+}
