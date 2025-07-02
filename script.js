@@ -303,132 +303,235 @@ document.getElementById("btnProximaFase").addEventListener("click", () => {
   iniciarMemoria();
 });
 
-// === TETRIS ===
+const tetrisCanvas = document.getElementById("tetrisCanvas");
+const tetrisCtx = tetrisCanvas.getContext("2d");
+
 const COLS = 10;
 const ROWS = 20;
 const BLOCK_SIZE = 20;
+
+tetrisCtx.scale(BLOCK_SIZE, BLOCK_SIZE);
+
+const COLORS = [
+  null,
+  '#00f0f0', // I - cyan
+  '#0000f0', // J - blue
+  '#f0a000', // L - orange
+  '#f0f000', // O - yellow
+  '#00f000', // S - green
+  '#a000f0', // T - purple
+  '#f00000'  // Z - red
+];
+
+// Formas das peças
+const SHAPES = [
+  [],
+  [[1,1,1,1]],              // I
+  [[2,0,0],[2,2,2]],        // J
+  [[0,0,3],[3,3,3]],        // L
+  [[4,4],[4,4]],            // O
+  [[0,5,5],[5,5,0]],        // S
+  [[0,6,0],[6,6,6]],        // T
+  [[7,7,0],[0,7,7]]         // Z
+];
+
 let board = [];
-let tetrisPiece;
-let dropInterval;
-let tetrisScore = 0;
+let currentPiece = null;
+let currentX = 0;
+let currentY = 0;
+let dropInterval = 500;
+let dropCounter = 0;
+let lastTime = 0;
+let score = 0;
 
-function iniciarTetris() {
-  clearInterval(dropInterval);
-  board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-  tetrisScore = 0;
-  tetrisPiece = criarPeca();
-  desenharTetris();
-  dropInterval = setInterval(baixarPeca, 500);
+function createBoard() {
+  board = [];
+  for(let r=0; r<ROWS; r++) {
+    board.push(new Array(COLS).fill(0));
+  }
 }
 
-function criarPeca() {
-  const pecas = [
-    [[1, 1, 1], [0, 1, 0]], // T
-    [[0, 2, 2], [2, 2, 0]], // S
-    [[3, 3, 0], [0, 3, 3]], // Z
-    [[4, 0, 0], [4, 4, 4]], // L
-    [[0, 0, 5], [5, 5, 5]], // J
-    [[6, 6], [6, 6]],       // O
-    [[0, 0, 0, 0], [7, 7, 7, 7]] // I
-  ];
-  const shape = pecas[Math.floor(Math.random() * pecas.length)];
-  return { shape, row: 0, col: 3 };
+function drawBlock(x, y, colorIndex) {
+  if (colorIndex) {
+    tetrisCtx.fillStyle = COLORS[colorIndex];
+    tetrisCtx.fillRect(x, y, 1, 1);
+    tetrisCtx.strokeStyle = 'black';
+    tetrisCtx.lineWidth = 0.1;
+    tetrisCtx.strokeRect(x, y, 1, 1);
+  }
 }
 
-function desenharTetris() {
+function drawBoard() {
+  for(let r=0; r<ROWS; r++) {
+    for(let c=0; c<COLS; c++) {
+      drawBlock(c, r, board[r][c]);
+    }
+  }
+}
+
+function drawPiece() {
+  currentPiece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) {
+        drawBlock(currentX + x, currentY + y, value);
+      }
+    });
+  });
+}
+
+function collide(board, piece, posX, posY) {
+  for(let y=0; y < piece.length; y++) {
+    for(let x=0; x < piece[y].length; x++) {
+      if (piece[y][x]) {
+        let boardX = posX + x;
+        let boardY = posY + y;
+        if (
+          boardX < 0 ||
+          boardX >= COLS ||
+          boardY >= ROWS ||
+          (boardY >= 0 && board[boardY][boardX] !== 0)
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function merge(board, piece, posX, posY) {
+  piece.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value && posY + y >= 0) {
+        board[posY + y][posX + x] = value;
+      }
+    });
+  });
+}
+
+function rotate(matrix) {
+  // Rotaciona matriz 90 graus no sentido horário
+  const N = matrix.length;
+  const result = [];
+  for(let x=0; x<N; x++) {
+    const row = [];
+    for(let y=N-1; y>=0; y--) {
+      row.push(matrix[y][x] || 0);
+    }
+    result.push(row);
+  }
+  return result;
+}
+
+function clearLines() {
+  let linesCleared = 0;
+  outer: for(let y=ROWS-1; y>=0; y--) {
+    for(let x=0; x<COLS; x++) {
+      if(board[y][x] === 0) {
+        continue outer;
+      }
+    }
+    // linha cheia
+    board.splice(y,1);
+    board.unshift(new Array(COLS).fill(0));
+    linesCleared++;
+    y++;
+  }
+  if(linesCleared > 0) {
+    score += linesCleared * 10;
+    updateScore();
+  }
+}
+
+function updateScore() {
+  // Você pode criar um elemento para mostrar a pontuação se quiser
+  console.log("Score:", score);
+}
+
+function newPiece() {
+  const id = Math.floor(Math.random() * (SHAPES.length - 1)) + 1;
+  return {
+    shape: SHAPES[id],
+    id: id
+  };
+}
+
+function resetPiece() {
+  currentPiece = newPiece();
+  currentX = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
+  currentY = -1; // começa fora da tela para cair de cima
+
+  if(collide(board, currentPiece.shape, currentX, currentY)) {
+    alert("Game Over! Sua pontuação: " + score);
+    createBoard();
+    score = 0;
+    updateScore();
+  }
+}
+
+function drop() {
+  if(!collide(board, currentPiece.shape, currentX, currentY +1)) {
+    currentY++;
+  } else {
+    merge(board, currentPiece.shape, currentX, currentY);
+    clearLines();
+    resetPiece();
+  }
+  dropCounter = 0;
+}
+
+function move(dir) {
+  const newX = currentX + dir;
+  if(!collide(board, currentPiece.shape, newX, currentY)) {
+    currentX = newX;
+  }
+}
+
+function rotatePiece() {
+  const rotated = rotate(currentPiece.shape);
+  if(!collide(board, rotated, currentX, currentY)) {
+    currentPiece.shape = rotated;
+  }
+}
+
+function update(time = 0) {
+  const deltaTime = time - lastTime;
+  lastTime = time;
+  dropCounter += deltaTime;
+
+  if(dropCounter > dropInterval) {
+    drop();
+  }
+
   tetrisCtx.clearRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
 
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      if (board[r][c]) desenharBloco(c, r, board[r][c]);
-    }
+  drawBoard();
+  drawPiece();
+
+  requestAnimationFrame(update);
+}
+
+// Controles do teclado
+document.addEventListener('keydown', e => {
+  if(jogo !== 'tetris') return; // só funciona se o jogo atual for tetris
+
+  if(e.key === 'ArrowLeft') {
+    move(-1);
+  } else if(e.key === 'ArrowRight') {
+    move(1);
+  } else if(e.key === 'ArrowDown') {
+    drop();
+  } else if(e.key === 'ArrowUp') {
+    rotatePiece();
   }
-
-  tetrisPiece.shape.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value) desenharBloco(tetrisPiece.col + x, tetrisPiece.row + y, value);
-    });
-  });
-
-  tetrisCtx.fillStyle = "white";
-  tetrisCtx.font = "16px Arial";
-  tetrisCtx.fillText("Pontos: " + tetrisScore, 10, 20);
-}
-
-function desenharBloco(x, y, tipo) {
-  const cores = ["", "#9b59b6", "#2ecc71", "#e74c3c", "#f39c12", "#3498db", "#f1c40f", "#1abc9c"];
-  tetrisCtx.fillStyle = cores[tipo];
-  tetrisCtx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
-}
-
-function mover(dx) {
-  tetrisPiece.col += dx;
-  if (colide()) tetrisPiece.col -= dx;
-}
-
-function rodar() {
-  const antiga = tetrisPiece.shape;
-  tetrisPiece.shape = tetrisPiece.shape[0].map((_, i) =>
-    tetrisPiece.shape.map(r => r[i]).reverse()
-  );
-  if (colide()) tetrisPiece.shape = antiga;
-}
-
-function baixarPeca() {
-  tetrisPiece.row++;
-  if (colide()) {
-    tetrisPiece.row--;
-    fixar();
-    limparLinhas();
-    tetrisPiece = criarPeca();
-    if (colide()) {
-      clearInterval(dropInterval);
-      tetrisCtx.fillStyle = "white";
-      tetrisCtx.font = "24px Arial";
-      tetrisCtx.fillText("Game Over", 40, 200);
-    }
-  }
-  desenharTetris();
-}
-
-function fixar() {
-  tetrisPiece.shape.forEach((row, y) => {
-    row.forEach((value, x) => {
-      if (value) board[tetrisPiece.row + y][tetrisPiece.col + x] = value;
-    });
-  });
-}
-
-function colide() {
-  return tetrisPiece.shape.some((row, y) => {
-    return row.some((value, x) => {
-      if (!value) return false;
-      const newX = tetrisPiece.col + x;
-      const newY = tetrisPiece.row + y;
-      return (
-        newX < 0 ||
-        newX >= COLS ||
-        newY >= ROWS ||
-        (newY >= 0 && board[newY][newX])
-      );
-    });
-  });
-}
-
-function limparLinhas() {
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r].every(c => c !== 0)) {
-      board.splice(r, 1);
-      board.unshift(Array(COLS).fill(0));
-      tetrisScore += 10;
-    }
-  }
-}
-
-document.addEventListener("keydown", e => {
-  if (jogo !== "tetris") return;
-  if (e.key === "ArrowLeft") mover(-1);
-  else if (e.key === "ArrowRight") mover(1);
-  else if (e.key === "ArrowDown") baixarPeca();
-  else if (e.key === "ArrowUp") rodar();
 });
+
+function iniciarTetris() {
+  createBoard();
+  score = 0;
+  updateScore();
+  resetPiece();
+  lastTime = 0;
+  dropCounter = 0;
+  update();
+}
